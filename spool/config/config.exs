@@ -6,16 +6,21 @@
 
 # General application configuration
 import Config
+# General application configuration (shared by all environments)
+import Config
 
 config :spark,
   formatter: ["Ash.Resource": [section_order: [:authentication, :token, :user_identity]]]
 
+config :ash, default_string_length_count: :codepoints
+
 config :spool,
   ecto_repos: [Spool.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Spool.Accounts]
+  # Domains only, not resources. Adjust to match your project.
+  ash_domains: [Spool.Accounts, Spool.Tasks]
 
-# Configure the endpoint
+# Endpoint
 config :spool, SpoolWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
@@ -26,21 +31,12 @@ config :spool, SpoolWeb.Endpoint,
   pubsub_server: Spool.PubSub,
   live_view: [signing_salt: "oh5XDAUQ"]
 
-# Configure LiveView
 config :phoenix_live_view,
-  # the attribute set on all root tags. Used for Phoenix.LiveView.ColocatedCSS.
   root_tag_attribute: "phx-r"
 
-# Configure the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
+# Mailer: Local adapter by default (see /dev/mailbox). Prod is set in runtime.exs.
 config :spool, Spool.Mailer, adapter: Swoosh.Adapters.Local
 
-# Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
   spool: [
@@ -50,7 +46,6 @@ config :esbuild,
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
-# Configure tailwind (the version is required)
 config :tailwind,
   version: "4.3.3",
   spool: [
@@ -62,15 +57,11 @@ config :tailwind,
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
-# Configure Elixir's Logger
 config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-# Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-# Import environment specific config. This must remain at the bottom
-# of this file so it overrides the configuration defined above.
+# Must remain at the bottom so env files override the above.
 import_config "#{config_env()}.exs"
-config :ash, default_string_length_count: :codepoints
