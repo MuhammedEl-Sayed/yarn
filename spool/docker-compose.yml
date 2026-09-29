@@ -1,0 +1,41 @@
+services:
+  spool:
+    build: .
+    restart: unless-stopped
+    environment:
+      PHX_HOST: spool.fangorn.online
+      PORT: 4000
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      DATABASE_URL: ecto://spool:${DB_PASSWORD}@db/spool
+    depends_on:
+      - db
+    networks:
+      - traefik
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.spool.rule=Host(`spool.fangorn.online`)
+      - traefik.http.routers.spool.entrypoints=web-secure
+      - traefik.http.routers.spool.tls.certResolver=default
+      - traefik.http.services.spool.loadbalancer.server.port=4000
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: spool
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: spool
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+networks:
+  traefik:
+    external: true
+  internal:
+
+volumes:
+  pgdata:

@@ -4,8 +4,6 @@
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 
-# General application configuration
-import Config
 # General application configuration (shared by all environments)
 import Config
 
@@ -17,8 +15,13 @@ config :ash, default_string_length_count: :codepoints
 config :spool,
   ecto_repos: [Spool.Repo],
   generators: [timestamp_type: :utc_datetime],
-  # Domains only, not resources. Adjust to match your project.
+  # Domains only, not resources.
   ash_domains: [Spool.Accounts, Spool.Tasks]
+
+# Required by AshJsonApi: lets Phoenix treat application/vnd.api+json as JSON
+config :mime,
+  extensions: %{"json" => "application/vnd.api+json"},
+  types: %{"application/vnd.api+json" => ["json"]}
 
 # Endpoint
 config :spool, SpoolWeb.Endpoint,
