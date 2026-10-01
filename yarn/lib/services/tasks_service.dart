@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:yarn/models/task.dart';
+import 'package:yarn/models/room.dart';
 
 class SpoolService {
   final Dio dio;
@@ -23,22 +24,33 @@ class SpoolService {
     );
   }
 
-  Task _fromResource(Map<String, dynamic> resource) {
+  Task _fromTaskResource(Map<String, dynamic> resource) {
     return Task.fromJson({
       'id': resource['id'],
       ...Map<String, dynamic>.from(resource['attributes'] as Map),
     });
   }
 
-  Map<String, dynamic> _attributes(Task task) {
+  Map<String, dynamic> _taskAttributes(Task task) {
     return task.toJson()..remove('id');
+  }
+
+  Room _fromRoomResource(Map<String, dynamic> resource) {
+    return Room.fromJson({
+      'id': resource['id'],
+      ...Map<String, dynamic>.from(resource['attributes'] as Map),
+    });
+  }
+
+  Map<String, dynamic> _roomAttributes(Room room) {
+    return room.toJson()..remove('id');
   }
 
   Future<List<Task>> getTasks() async {
     final res = await dio.get('/tasks');
     final data = res.data['data'] as List;
     return data
-        .map((e) => _fromResource(Map<String, dynamic>.from(e)))
+        .map((e) => _fromTaskResource(Map<String, dynamic>.from(e)))
         .toList();
   }
 
@@ -46,55 +58,57 @@ class SpoolService {
     final res = await dio.post(
       '/tasks',
       data: {
-        'data': {'type': 'task', 'attributes': _attributes(task)},
+        'data': {'type': 'task', 'attributes': _taskAttributes(task)},
       },
     );
-    return _fromResource(Map<String, dynamic>.from(res.data['data']));
+    return _fromTaskResource(Map<String, dynamic>.from(res.data['data']));
   }
 
   Future<Task> updateTask(Task task) async {
-    final attrs = _attributes(task)..remove('created_by');
+    final attrs = _taskAttributes(task)..remove('created_by');
     final res = await dio.patch(
       '/tasks/${task.id}',
       data: {
         'data': {'type': 'task', 'id': task.id, 'attributes': attrs},
       },
     );
-    return _fromResource(Map<String, dynamic>.from(res.data['data']));
+    return _fromTaskResource(Map<String, dynamic>.from(res.data['data']));
   }
 
   Future<void> deleteTask(String id) async {
     await dio.delete('/tasks/$id');
   }
 
+  Future<List<Room>> getRooms() async {
+    final res = await dio.get('/rooms');
+    final data = res.data['data'] as List;
+    return data
+        .map((e) => _fromRoomResource(Map<String, dynamic>.from(e)))
+        .toList();
+  }
 
-Future<List<Task>> getRooms() async {
-  final res = await dio.get('/rooms');
-  final data = res.data['data'] as List;
-  return data.map((e) => _fromResource(Map<String, dynamic>.from(e))).toList();
-}
+  Future<Room> createRoom(Room room) async {
+    final res = await dio.post(
+      '/tasks',
+      data: {
+        'data': {'type': 'task', 'attributes': _roomAttributes(room)},
+      },
+    );
+    return _fromRoomResource(Map<String, dynamic>.from(res.data['data']));
+  }
 
-Future<Task> createTask(Task task) async {
-  final res = await dio.post(
-    '/tasks',
-    data: {
-      'data': {'type': 'task', 'attributes': _attributes(task)},
-    },
-  );
-  return _fromResource(Map<String, dynamic>.from(res.data['data']));
-}
+  Future<Room> updateRoom(Room room) async {
+    final attrs = _roomAttributes(room)..remove('created_by');
+    final res = await dio.patch(
+      '/room/${room.id}',
+      data: {
+        'data': {'type': 'task', 'id': room.id, 'attributes': attrs},
+      },
+    );
+    return _fromRoomResource(Map<String, dynamic>.from(res.data['data']));
+  }
 
-Future<Task> updateTask(Task task) async {
-  final attrs = _attributes(task)..remove('created_by');
-  final res = await dio.patch(
-    '/tasks/${task.id}',
-    data: {
-      'data': {'type': 'task', 'id': task.id, 'attributes': attrs},
-    },
-  );
-  return _fromResource(Map<String, dynamic>.from(res.data['data']));
-}
-
-Future<void> deleteTask(String id) async {
-  await dio.delete('/tasks/$id');
+  Future<void> deleteRoom(String id) async {
+    await dio.delete('/rooms/$id');
+  }
 }

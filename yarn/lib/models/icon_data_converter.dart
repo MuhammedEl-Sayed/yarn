@@ -9,9 +9,9 @@ class IconDataConverter
   IconData? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
     return IconData(
-      json['codePoint'] as int,
-      fontFamily: json['fontFamily'] as String?,
-      fontPackage: json['fontPackage'] as String?,
+      json['code_point'] as int,
+      fontFamily: json['font_family'] as String?,
+      fontPackage: json['font_package'] as String?,
     );
   }
 
@@ -19,9 +19,9 @@ class IconDataConverter
   Map<String, dynamic>? toJson(IconData? icon) {
     if (icon == null) return null;
     return {
-      'codePoint': icon.codePoint,
-      'fontFamily': icon.fontFamily,
-      'fontPackage': icon.fontPackage,
+      'code_point': icon.codePoint,
+      'font_family': icon.fontFamily,
+      'font_package': icon.fontPackage,
     };
   }
 }

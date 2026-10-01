@@ -7,9 +7,12 @@ part 'room.g.dart';
 
 @freezed
 abstract class Room with _$Room {
+  @JsonSerializable(fieldRename: FieldRename.snake)
   const factory Room({
     required String id,
     required String name,
+    required String createdBy,
+    String? assignedTo,
     @IconDataConverter() IconData? icon,
     String? imagePath,
   }) = _Room;

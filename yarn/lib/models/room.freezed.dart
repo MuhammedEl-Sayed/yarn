@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Room {
 
- String get id; String get name;@IconDataConverter() IconData? get icon; String? get imagePath;
+ String get id; String get name; String get createdBy; String? get assignedTo;@IconDataConverter() IconData? get icon; String? get imagePath;
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RoomCopyWith<Room> get copyWith => _$RoomCopyWithImpl<Room>(this as Room, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.assignedTo, assignedTo) || other.assignedTo == assignedTo)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,imagePath);
+int get hashCode => Object.hash(runtimeType,id,name,createdBy,assignedTo,icon,imagePath);
 
 @override
 String toString() {
-  return 'Room(id: $id, name: $name, icon: $icon, imagePath: $imagePath)';
+  return 'Room(id: $id, name: $name, createdBy: $createdBy, assignedTo: $assignedTo, icon: $icon, imagePath: $imagePath)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RoomCopyWith<$Res>  {
   factory $RoomCopyWith(Room value, $Res Function(Room) _then) = _$RoomCopyWithImpl;
 @useResult
 $Res call({
- String id, String name,@IconDataConverter() IconData? icon, String? imagePath
+ String id, String name, String createdBy, String? assignedTo,@IconDataConverter() IconData? icon, String? imagePath
 });
 
 
@@ -65,11 +65,13 @@ class _$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = freezed,Object? imagePath = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? createdBy = null,Object? assignedTo = freezed,Object? icon = freezed,Object? imagePath = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,assignedTo: freezed == assignedTo ? _self.assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
+as String?,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as IconData?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @IconDataConverter()  IconData? icon,  String? imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String createdBy,  String? assignedTo, @IconDataConverter()  IconData? icon,  String? imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.assignedTo,_that.icon,_that.imagePath);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @IconDataConverter()  IconData? icon,  String? imagePath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String createdBy,  String? assignedTo, @IconDataConverter()  IconData? icon,  String? imagePath)  $default,) {final _that = this;
 switch (_that) {
 case _Room():
-return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.assignedTo,_that.icon,_that.imagePath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @IconDataConverter()  IconData? icon,  String? imagePath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String createdBy,  String? assignedTo, @IconDataConverter()  IconData? icon,  String? imagePath)?  $default,) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.assignedTo,_that.icon,_that.imagePath);case _:
   return null;
 
 }
@@ -209,14 +211,16 @@ return $default(_that.id,_that.name,_that.icon,_that.imagePath);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _Room implements Room {
-  const _Room({required this.id, required this.name, @IconDataConverter() this.icon, this.imagePath});
+  const _Room({required this.id, required this.name, required this.createdBy, this.assignedTo, @IconDataConverter() this.icon, this.imagePath});
   factory _Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 
 @override final  String id;
 @override final  String name;
+@override final  String createdBy;
+@override final  String? assignedTo;
 @override@IconDataConverter() final  IconData? icon;
 @override final  String? imagePath;
 
@@ -233,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.assignedTo, assignedTo) || other.assignedTo == assignedTo)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,imagePath);
+int get hashCode => Object.hash(runtimeType,id,name,createdBy,assignedTo,icon,imagePath);
 
 @override
 String toString() {
-  return 'Room(id: $id, name: $name, icon: $icon, imagePath: $imagePath)';
+  return 'Room(id: $id, name: $name, createdBy: $createdBy, assignedTo: $assignedTo, icon: $icon, imagePath: $imagePath)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
   factory _$RoomCopyWith(_Room value, $Res Function(_Room) _then) = __$RoomCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name,@IconDataConverter() IconData? icon, String? imagePath
+ String id, String name, String createdBy, String? assignedTo,@IconDataConverter() IconData? icon, String? imagePath
 });
 
 
@@ -270,11 +274,13 @@ class __$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = freezed,Object? imagePath = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? createdBy = null,Object? assignedTo = freezed,Object? icon = freezed,Object? imagePath = freezed,}) {
   return _then(_Room(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
+as String,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,assignedTo: freezed == assignedTo ? _self.assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
+as String?,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as IconData?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
