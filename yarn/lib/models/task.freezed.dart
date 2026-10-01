@@ -221,8 +221,8 @@ return $default(_that.id,_that.createdBy,_that.name,_that.isActive,_that.descrip
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _Task implements Task {
   const _Task({required this.id, required this.createdBy, required this.name, required this.isActive, this.description, required this.repUnit, this.every, final  List<String>? repeatsOn, required this.monthlyOn, this.lastCompleted, required this.lastUpdated, final  List<String>? assignedTo, this.roomId}): _repeatsOn = repeatsOn,_assignedTo = assignedTo;
   factory _Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);

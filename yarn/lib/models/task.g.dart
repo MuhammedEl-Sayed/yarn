@@ -8,44 +8,45 @@ part of 'task.dart';
 
 _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
   id: json['id'] as String,
-  createdBy: json['createdBy'] as String,
+  createdBy: json['created_by'] as String,
   name: json['name'] as String,
-  isActive: json['isActive'] as bool,
+  isActive: json['is_active'] as bool,
   description: json['description'] as String?,
-  repUnit: $enumDecode(_$RepititionUnitEnumMap, json['repUnit']),
+  repUnit: $enumDecode(_$RepititionUnitEnumMap, json['rep_unit']),
   every: (json['every'] as num?)?.toInt(),
-  repeatsOn: (json['repeatsOn'] as List<dynamic>?)
+  repeatsOn: (json['repeats_on'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),
-  monthlyOn: (json['monthlyOn'] as num).toInt(),
-  lastCompleted: json['lastCompleted'] == null
+  monthlyOn: (json['monthly_on'] as num).toInt(),
+  lastCompleted: json['last_completed'] == null
       ? null
-      : DateTime.parse(json['lastCompleted'] as String),
-  lastUpdated: DateTime.parse(json['lastUpdated'] as String),
-  assignedTo: (json['assignedTo'] as List<dynamic>?)
+      : DateTime.parse(json['last_completed'] as String),
+  lastUpdated: DateTime.parse(json['last_updated'] as String),
+  assignedTo: (json['assigned_to'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),
-  roomId: json['roomId'] as String?,
+  roomId: json['room_id'] as String?,
 );
 
 Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'id': instance.id,
-  'createdBy': instance.createdBy,
+  'created_by': instance.createdBy,
   'name': instance.name,
-  'isActive': instance.isActive,
+  'is_active': instance.isActive,
   'description': instance.description,
-  'repUnit': _$RepititionUnitEnumMap[instance.repUnit]!,
+  'rep_unit': _$RepititionUnitEnumMap[instance.repUnit]!,
   'every': instance.every,
-  'repeatsOn': instance.repeatsOn,
-  'monthlyOn': instance.monthlyOn,
-  'lastCompleted': instance.lastCompleted?.toIso8601String(),
-  'lastUpdated': instance.lastUpdated.toIso8601String(),
-  'assignedTo': instance.assignedTo,
-  'roomId': instance.roomId,
+  'repeats_on': instance.repeatsOn,
+  'monthly_on': instance.monthlyOn,
+  'last_completed': instance.lastCompleted?.toIso8601String(),
+  'last_updated': instance.lastUpdated.toIso8601String(),
+  'assigned_to': instance.assignedTo,
+  'room_id': instance.roomId,
 };
 
 const _$RepititionUnitEnumMap = {
   RepititionUnit.day: 'day',
   RepititionUnit.week: 'week',
   RepititionUnit.month: 'month',
+  RepititionUnit.year: 'year',
 };

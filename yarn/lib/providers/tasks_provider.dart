@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:yarn/models/task.dart';
 import 'package:collection/collection.dart';
+import 'package:yarn/services/tasks_service.dart';
 
 class TasksProvider extends ChangeNotifier {
   List<Task> tasks = [];
 
   TasksProvider(this.tasks);
+
+  void init() async {
+    SpoolService ts = SpoolService.create();
+    updateTasks(await ts.getTasks());
+  }
 
   void updateTasks(List<Task> newTasks) {
     tasks = newTasks;

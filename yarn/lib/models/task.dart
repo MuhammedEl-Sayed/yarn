@@ -6,6 +6,7 @@ part 'task.g.dart';
 
 @freezed
 abstract class Task with _$Task {
+  @JsonSerializable(fieldRename: FieldRename.snake)
   const factory Task({
     required String id,
     required String createdBy,
