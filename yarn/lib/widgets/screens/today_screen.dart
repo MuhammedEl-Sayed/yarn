@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:yarn/models/room.dart';
 import 'package:yarn/models/task.dart';
@@ -18,6 +20,13 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> {
   static const _all = 'All';
+  static const _roomColors = [
+    Color(0xFFE5A58E), // terracotta
+    Color(0xFFB9C7AE), // sage
+    Color(0xFFEBCB8B), // gold
+    Color(0xFF7C9CC4), // blue
+  ];
+
   String _filter = _all; // 'All' or a room id
 
   @override
@@ -34,12 +43,27 @@ class _TodayScreenState extends State<TodayScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  void _logError(String what, Object e) {
+    if (e is DioException) {
+      debugPrint(
+        '$what FAILED ${e.response?.statusCode}: ${e.response?.data ?? e.message}',
+      );
+    } else {
+      debugPrint('$what FAILED: $e');
+    }
+  }
+
   Future<void> _openAddChore() async {
     final provider = context.read<SpoolProvider>();
     final draft = await showAddChoreSheet(
       context,
       rooms: [
-        for (final r in provider.rooms) RoomOption(id: r.id, label: r.name),
+        for (final (i, r) in provider.rooms.indexed)
+          RoomOption(
+            id: r.id,
+            label: r.name,
+            color: _roomColors[i % _roomColors.length],
+          ),
       ],
       people: const [],
     );
@@ -49,23 +73,35 @@ class _TodayScreenState extends State<TodayScreen> {
       await provider.addTask(
         Task(
           id: '', // server assigns
-          title: draft.title,
-          roomId: draft.roomId,
-          repeat: draft.repeat.name,
+          createdBy: dotenv.env['SPOOL_USER'] ?? 'me',
+          name: draft.title,
+          repUnit: _repUnit(draft.repeat),
+          every: 1,
           repeatsOn: draft.repeatsOn,
-          assignedTo: draft.assignedTo,
-          effort: draft.effort,
+          monthlyOn: 1,
+          lastUpdated: DateTime.now().toUtc(),
+          assignedTo: [if (draft.assignedTo != null) draft.assignedTo!],
+          roomId: draft.roomId,
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      _logError('ADD', e);
       if (mounted) _showError("Couldn't add chore");
     }
   }
 
+  // TODO: match these strings to your Spool.Tasks.Task.RepUnit values.
+  String _repUnit(Repeat r) => switch (r.name) {
+    'weekly' => 'week',
+    'monthly' => 'month',
+    _ => 'day',
+  };
+
   Future<void> _toggle(Task t) async {
     try {
       await context.read<SpoolProvider>().toggleTask(t);
-    } catch (_) {
+    } catch (e) {
+      _logError('TOGGLE', e);
       if (mounted) _showError("Couldn't update chore");
     }
   }
@@ -80,7 +116,7 @@ class _TodayScreenState extends State<TodayScreen> {
     final visible = _filter == _all
         ? tasks
         : tasks.where((t) => t.roomId == _filter).toList();
-    final done = tasks.where((t) => t.isDone).length;
+    final done = tasks.where((t) => t.isDoneToday).length;
     final roomNames = {for (final Room r in rooms) r.id: r.name};
 
     return Scaffold(

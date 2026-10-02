@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Task {
 
- String get id; String get title; String? get roomId; String get repeat; List<String> get repeatsOn; String? get assignedTo; int get effort; bool get isDone; String? get createdBy;
+ String get id; String get createdBy; String get name; bool get isActive; String? get description; String get repUnit; int? get every; List<String> get repeatsOn; int get monthlyOn; DateTime? get lastCompleted; DateTime get lastUpdated; List<String> get assignedTo; String? get roomId;
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $TaskCopyWith<Task> get copyWith => _$TaskCopyWithImpl<Task>(this as Task, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.repeat, repeat) || other.repeat == repeat)&&const DeepCollectionEquality().equals(other.repeatsOn, repeatsOn)&&(identical(other.assignedTo, assignedTo) || other.assignedTo == assignedTo)&&(identical(other.effort, effort) || other.effort == effort)&&(identical(other.isDone, isDone) || other.isDone == isDone)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.id, id) || other.id == id)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.name, name) || other.name == name)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.description, description) || other.description == description)&&(identical(other.repUnit, repUnit) || other.repUnit == repUnit)&&(identical(other.every, every) || other.every == every)&&const DeepCollectionEquality().equals(other.repeatsOn, repeatsOn)&&(identical(other.monthlyOn, monthlyOn) || other.monthlyOn == monthlyOn)&&(identical(other.lastCompleted, lastCompleted) || other.lastCompleted == lastCompleted)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&const DeepCollectionEquality().equals(other.assignedTo, assignedTo)&&(identical(other.roomId, roomId) || other.roomId == roomId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,roomId,repeat,const DeepCollectionEquality().hash(repeatsOn),assignedTo,effort,isDone,createdBy);
+int get hashCode => Object.hash(runtimeType,id,createdBy,name,isActive,description,repUnit,every,const DeepCollectionEquality().hash(repeatsOn),monthlyOn,lastCompleted,lastUpdated,const DeepCollectionEquality().hash(assignedTo),roomId);
 
 @override
 String toString() {
-  return 'Task(id: $id, title: $title, roomId: $roomId, repeat: $repeat, repeatsOn: $repeatsOn, assignedTo: $assignedTo, effort: $effort, isDone: $isDone, createdBy: $createdBy)';
+  return 'Task(id: $id, createdBy: $createdBy, name: $name, isActive: $isActive, description: $description, repUnit: $repUnit, every: $every, repeatsOn: $repeatsOn, monthlyOn: $monthlyOn, lastCompleted: $lastCompleted, lastUpdated: $lastUpdated, assignedTo: $assignedTo, roomId: $roomId)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $TaskCopyWith<$Res>  {
   factory $TaskCopyWith(Task value, $Res Function(Task) _then) = _$TaskCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String? roomId, String repeat, List<String> repeatsOn, String? assignedTo, int effort, bool isDone, String? createdBy
+ String id, String createdBy, String name, bool isActive, String? description, String repUnit, int? every, List<String> repeatsOn, int monthlyOn, DateTime? lastCompleted, DateTime lastUpdated, List<String> assignedTo, String? roomId
 });
 
 
@@ -65,17 +65,21 @@ class _$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? roomId = freezed,Object? repeat = null,Object? repeatsOn = null,Object? assignedTo = freezed,Object? effort = null,Object? isDone = null,Object? createdBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdBy = null,Object? name = null,Object? isActive = null,Object? description = freezed,Object? repUnit = null,Object? every = freezed,Object? repeatsOn = null,Object? monthlyOn = null,Object? lastCompleted = freezed,Object? lastUpdated = null,Object? assignedTo = null,Object? roomId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,roomId: freezed == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
-as String?,repeat: null == repeat ? _self.repeat : repeat // ignore: cast_nullable_to_non_nullable
-as String,repeatsOn: null == repeatsOn ? _self.repeatsOn : repeatsOn // ignore: cast_nullable_to_non_nullable
-as List<String>,assignedTo: freezed == assignedTo ? _self.assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
-as String?,effort: null == effort ? _self.effort : effort // ignore: cast_nullable_to_non_nullable
-as int,isDone: null == isDone ? _self.isDone : isDone // ignore: cast_nullable_to_non_nullable
-as bool,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,repUnit: null == repUnit ? _self.repUnit : repUnit // ignore: cast_nullable_to_non_nullable
+as String,every: freezed == every ? _self.every : every // ignore: cast_nullable_to_non_nullable
+as int?,repeatsOn: null == repeatsOn ? _self.repeatsOn : repeatsOn // ignore: cast_nullable_to_non_nullable
+as List<String>,monthlyOn: null == monthlyOn ? _self.monthlyOn : monthlyOn // ignore: cast_nullable_to_non_nullable
+as int,lastCompleted: freezed == lastCompleted ? _self.lastCompleted : lastCompleted // ignore: cast_nullable_to_non_nullable
+as DateTime?,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime,assignedTo: null == assignedTo ? _self.assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
+as List<String>,roomId: freezed == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String? roomId,  String repeat,  List<String> repeatsOn,  String? assignedTo,  int effort,  bool isDone,  String? createdBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String createdBy,  String name,  bool isActive,  String? description,  String repUnit,  int? every,  List<String> repeatsOn,  int monthlyOn,  DateTime? lastCompleted,  DateTime lastUpdated,  List<String> assignedTo,  String? roomId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_that.assignedTo,_that.effort,_that.isDone,_that.createdBy);case _:
+return $default(_that.id,_that.createdBy,_that.name,_that.isActive,_that.description,_that.repUnit,_that.every,_that.repeatsOn,_that.monthlyOn,_that.lastCompleted,_that.lastUpdated,_that.assignedTo,_that.roomId);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String? roomId,  String repeat,  List<String> repeatsOn,  String? assignedTo,  int effort,  bool isDone,  String? createdBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String createdBy,  String name,  bool isActive,  String? description,  String repUnit,  int? every,  List<String> repeatsOn,  int monthlyOn,  DateTime? lastCompleted,  DateTime lastUpdated,  List<String> assignedTo,  String? roomId)  $default,) {final _that = this;
 switch (_that) {
 case _Task():
-return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_that.assignedTo,_that.effort,_that.isDone,_that.createdBy);case _:
+return $default(_that.id,_that.createdBy,_that.name,_that.isActive,_that.description,_that.repUnit,_that.every,_that.repeatsOn,_that.monthlyOn,_that.lastCompleted,_that.lastUpdated,_that.assignedTo,_that.roomId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String? roomId,  String repeat,  List<String> repeatsOn,  String? assignedTo,  int effort,  bool isDone,  String? createdBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String createdBy,  String name,  bool isActive,  String? description,  String repUnit,  int? every,  List<String> repeatsOn,  int monthlyOn,  DateTime? lastCompleted,  DateTime lastUpdated,  List<String> assignedTo,  String? roomId)?  $default,) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_that.assignedTo,_that.effort,_that.isDone,_that.createdBy);case _:
+return $default(_that.id,_that.createdBy,_that.name,_that.isActive,_that.description,_that.repUnit,_that.every,_that.repeatsOn,_that.monthlyOn,_that.lastCompleted,_that.lastUpdated,_that.assignedTo,_that.roomId);case _:
   return null;
 
 }
@@ -217,13 +221,16 @@ return $default(_that.id,_that.title,_that.roomId,_that.repeat,_that.repeatsOn,_
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _Task implements Task {
-  const _Task({required this.id, required this.title, this.roomId, this.repeat = 'once', final  List<String> repeatsOn = const <String>[], this.assignedTo, this.effort = 3, this.isDone = false, this.createdBy}): _repeatsOn = repeatsOn;
+  const _Task({required this.id, required this.createdBy, required this.name, this.isActive = true, this.description, required this.repUnit, this.every, final  List<String> repeatsOn = const <String>[], this.monthlyOn = 1, this.lastCompleted, required this.lastUpdated, final  List<String> assignedTo = const <String>[], this.roomId}): _repeatsOn = repeatsOn,_assignedTo = assignedTo;
   factory _Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
 @override final  String id;
-@override final  String title;
-@override final  String? roomId;
-@override@JsonKey() final  String repeat;
+@override final  String createdBy;
+@override final  String name;
+@override@JsonKey() final  bool isActive;
+@override final  String? description;
+@override final  String repUnit;
+@override final  int? every;
  final  List<String> _repeatsOn;
 @override@JsonKey() List<String> get repeatsOn {
   if (_repeatsOn is EqualUnmodifiableListView) return _repeatsOn;
@@ -231,10 +238,17 @@ class _Task implements Task {
   return EqualUnmodifiableListView(_repeatsOn);
 }
 
-@override final  String? assignedTo;
-@override@JsonKey() final  int effort;
-@override@JsonKey() final  bool isDone;
-@override final  String? createdBy;
+@override@JsonKey() final  int monthlyOn;
+@override final  DateTime? lastCompleted;
+@override final  DateTime lastUpdated;
+ final  List<String> _assignedTo;
+@override@JsonKey() List<String> get assignedTo {
+  if (_assignedTo is EqualUnmodifiableListView) return _assignedTo;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_assignedTo);
+}
+
+@override final  String? roomId;
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.repeat, repeat) || other.repeat == repeat)&&const DeepCollectionEquality().equals(other._repeatsOn, _repeatsOn)&&(identical(other.assignedTo, assignedTo) || other.assignedTo == assignedTo)&&(identical(other.effort, effort) || other.effort == effort)&&(identical(other.isDone, isDone) || other.isDone == isDone)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.id, id) || other.id == id)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.name, name) || other.name == name)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.description, description) || other.description == description)&&(identical(other.repUnit, repUnit) || other.repUnit == repUnit)&&(identical(other.every, every) || other.every == every)&&const DeepCollectionEquality().equals(other._repeatsOn, _repeatsOn)&&(identical(other.monthlyOn, monthlyOn) || other.monthlyOn == monthlyOn)&&(identical(other.lastCompleted, lastCompleted) || other.lastCompleted == lastCompleted)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&const DeepCollectionEquality().equals(other._assignedTo, _assignedTo)&&(identical(other.roomId, roomId) || other.roomId == roomId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,roomId,repeat,const DeepCollectionEquality().hash(_repeatsOn),assignedTo,effort,isDone,createdBy);
+int get hashCode => Object.hash(runtimeType,id,createdBy,name,isActive,description,repUnit,every,const DeepCollectionEquality().hash(_repeatsOn),monthlyOn,lastCompleted,lastUpdated,const DeepCollectionEquality().hash(_assignedTo),roomId);
 
 @override
 String toString() {
-  return 'Task(id: $id, title: $title, roomId: $roomId, repeat: $repeat, repeatsOn: $repeatsOn, assignedTo: $assignedTo, effort: $effort, isDone: $isDone, createdBy: $createdBy)';
+  return 'Task(id: $id, createdBy: $createdBy, name: $name, isActive: $isActive, description: $description, repUnit: $repUnit, every: $every, repeatsOn: $repeatsOn, monthlyOn: $monthlyOn, lastCompleted: $lastCompleted, lastUpdated: $lastUpdated, assignedTo: $assignedTo, roomId: $roomId)';
 }
 
 
@@ -269,7 +283,7 @@ abstract mixin class _$TaskCopyWith<$Res> implements $TaskCopyWith<$Res> {
   factory _$TaskCopyWith(_Task value, $Res Function(_Task) _then) = __$TaskCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String? roomId, String repeat, List<String> repeatsOn, String? assignedTo, int effort, bool isDone, String? createdBy
+ String id, String createdBy, String name, bool isActive, String? description, String repUnit, int? every, List<String> repeatsOn, int monthlyOn, DateTime? lastCompleted, DateTime lastUpdated, List<String> assignedTo, String? roomId
 });
 
 
@@ -286,17 +300,21 @@ class __$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? roomId = freezed,Object? repeat = null,Object? repeatsOn = null,Object? assignedTo = freezed,Object? effort = null,Object? isDone = null,Object? createdBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdBy = null,Object? name = null,Object? isActive = null,Object? description = freezed,Object? repUnit = null,Object? every = freezed,Object? repeatsOn = null,Object? monthlyOn = null,Object? lastCompleted = freezed,Object? lastUpdated = null,Object? assignedTo = null,Object? roomId = freezed,}) {
   return _then(_Task(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,roomId: freezed == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
-as String?,repeat: null == repeat ? _self.repeat : repeat // ignore: cast_nullable_to_non_nullable
-as String,repeatsOn: null == repeatsOn ? _self._repeatsOn : repeatsOn // ignore: cast_nullable_to_non_nullable
-as List<String>,assignedTo: freezed == assignedTo ? _self.assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
-as String?,effort: null == effort ? _self.effort : effort // ignore: cast_nullable_to_non_nullable
-as int,isDone: null == isDone ? _self.isDone : isDone // ignore: cast_nullable_to_non_nullable
-as bool,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,repUnit: null == repUnit ? _self.repUnit : repUnit // ignore: cast_nullable_to_non_nullable
+as String,every: freezed == every ? _self.every : every // ignore: cast_nullable_to_non_nullable
+as int?,repeatsOn: null == repeatsOn ? _self._repeatsOn : repeatsOn // ignore: cast_nullable_to_non_nullable
+as List<String>,monthlyOn: null == monthlyOn ? _self.monthlyOn : monthlyOn // ignore: cast_nullable_to_non_nullable
+as int,lastCompleted: freezed == lastCompleted ? _self.lastCompleted : lastCompleted // ignore: cast_nullable_to_non_nullable
+as DateTime?,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime,assignedTo: null == assignedTo ? _self._assignedTo : assignedTo // ignore: cast_nullable_to_non_nullable
+as List<String>,roomId: freezed == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

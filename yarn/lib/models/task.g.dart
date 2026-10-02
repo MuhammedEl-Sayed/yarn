@@ -8,28 +8,42 @@ part of 'task.dart';
 
 _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
   id: json['id'] as String,
-  title: json['title'] as String,
-  roomId: json['room_id'] as String?,
-  repeat: json['repeat'] as String? ?? 'once',
+  createdBy: json['created_by'] as String,
+  name: json['name'] as String,
+  isActive: json['is_active'] as bool? ?? true,
+  description: json['description'] as String?,
+  repUnit: json['rep_unit'] as String,
+  every: (json['every'] as num?)?.toInt(),
   repeatsOn:
       (json['repeats_on'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
       const <String>[],
-  assignedTo: json['assigned_to'] as String?,
-  effort: (json['effort'] as num?)?.toInt() ?? 3,
-  isDone: json['is_done'] as bool? ?? false,
-  createdBy: json['created_by'] as String?,
+  monthlyOn: (json['monthly_on'] as num?)?.toInt() ?? 1,
+  lastCompleted: json['last_completed'] == null
+      ? null
+      : DateTime.parse(json['last_completed'] as String),
+  lastUpdated: DateTime.parse(json['last_updated'] as String),
+  assignedTo:
+      (json['assigned_to'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
+  roomId: json['room_id'] as String?,
 );
 
 Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'id': instance.id,
-  'title': instance.title,
-  'room_id': instance.roomId,
-  'repeat': instance.repeat,
-  'repeats_on': instance.repeatsOn,
-  'assigned_to': instance.assignedTo,
-  'effort': instance.effort,
-  'is_done': instance.isDone,
   'created_by': instance.createdBy,
+  'name': instance.name,
+  'is_active': instance.isActive,
+  'description': instance.description,
+  'rep_unit': instance.repUnit,
+  'every': instance.every,
+  'repeats_on': instance.repeatsOn,
+  'monthly_on': instance.monthlyOn,
+  'last_completed': instance.lastCompleted?.toIso8601String(),
+  'last_updated': instance.lastUpdated.toIso8601String(),
+  'assigned_to': instance.assignedTo,
+  'room_id': instance.roomId,
 };

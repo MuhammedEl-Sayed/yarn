@@ -49,9 +49,12 @@ class SpoolProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Optimistic: flips immediately, rolls back and rethrows on failure.
   Future<void> toggleTask(Task task) async {
-    final flipped = task.copyWith(isDone: !task.isDone);
+    final now = DateTime.now().toUtc();
+    final flipped = task.copyWith(
+      lastCompleted: task.isDoneToday ? null : now,
+      lastUpdated: now,
+    );
     _replaceTask(flipped);
     try {
       _replaceTask(await _service.updateTask(flipped));

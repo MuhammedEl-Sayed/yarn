@@ -24,18 +24,19 @@ class TaskRow extends StatelessWidget {
   static const _doneGreen = Color(0xFF7A9A78);
 
   String get _subtitle {
-    final repeat = task.repeat.isEmpty
+    final unit = task.repUnit.isEmpty
         ? ''
-        : task.repeat[0].toUpperCase() + task.repeat.substring(1);
+        : task.repUnit[0].toUpperCase() + task.repUnit.substring(1);
     return [
-      if (roomName != null) roomName!,
-      if (task.assignedTo != null) task.assignedTo!,
-      repeat,
+      ?roomName,
+      if (task.assignedTo.isNotEmpty) task.assignedTo.join(', '),
+      unit,
     ].where((s) => s.isNotEmpty).join(' · ');
   }
 
   @override
   Widget build(BuildContext context) {
+    final done = task.isDoneToday;
     final swatch = _swatches[task.id.hashCode.abs() % _swatches.length];
     final muted = AppColors.ink.withValues(alpha: 0.55);
 
@@ -47,7 +48,7 @@ class TaskRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: swatch.withValues(alpha: task.isDone ? 0.5 : 1),
+              color: swatch.withValues(alpha: done ? 0.5 : 1),
               shape: BoxShape.circle,
             ),
           ),
@@ -57,14 +58,15 @@ class TaskRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  task.title,
-                  style: AppText.body(
-                    16,
-                    weight: FontWeight.w800,
-                    color: task.isDone ? muted : AppColors.ink,
-                  ).copyWith(
-                    decoration: task.isDone ? TextDecoration.lineThrough : null,
-                  ),
+                  task.name,
+                  style:
+                      AppText.body(
+                        16,
+                        weight: FontWeight.w800,
+                        color: done ? muted : AppColors.ink,
+                      ).copyWith(
+                        decoration: done ? TextDecoration.lineThrough : null,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(_subtitle, style: AppText.body(13, color: muted)),
@@ -72,22 +74,29 @@ class TaskRow extends StatelessWidget {
             ),
           ),
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: onToggle,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: task.isDone ? _doneGreen : Colors.transparent,
-                border: Border.all(
-                  color: task.isDone ? _doneGreen : AppColors.line,
-                  width: 2,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done ? _doneGreen : Colors.transparent,
+                    border: Border.all(
+                      color: done ? _doneGreen : AppColors.line,
+                      width: 2,
+                    ),
+                  ),
+                  child: done
+                      ? const Icon(Icons.check, size: 18, color: Colors.white)
+                      : null,
                 ),
               ),
-              child: task.isDone
-                  ? const Icon(Icons.check, size: 18, color: Colors.white)
-                  : null,
             ),
           ),
         ],

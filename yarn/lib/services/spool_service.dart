@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:yarn/models/room.dart';
 import 'package:yarn/models/task.dart';
-import 'package:yarn/services/token_store.dart';
 
 class SpoolService {
   static const _baseUrl = String.fromEnvironment('SPOOL_BASE_URL');
@@ -10,34 +10,28 @@ class SpoolService {
   final Dio dio;
   SpoolService(this.dio);
 
-  factory SpoolService.create(TokenStore tokens) {
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: _baseUrl,
-        headers: {'Accept': _jsonApi, 'Content-Type': _jsonApi},
+  factory SpoolService.create() {
+    return SpoolService(
+      Dio(
+        BaseOptions(
+          baseUrl: dotenv.env['SPOOL_BASE_URL']!,
+          headers: {
+            'Accept': _jsonApi,
+            'Content-Type': _jsonApi,
+            'Authorization': 'Bearer ${dotenv.env['SPOOL_API_KEY']}',
+          },
+        ),
       ),
     );
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await tokens.read();
-          if (token != null) options.headers['Authorization'] = 'Bearer $token';
-          handler.next(options);
-        },
-      ),
-    );
-    return SpoolService(dio);
   }
-
   Map<String, dynamic> _withId(Map resource) => {
     'id': resource['id'],
     ...Map<String, dynamic>.from(resource['attributes'] as Map),
   };
 
-  Map<String, dynamic> _attrs(Map<String, dynamic> json) =>
-      json
-        ..remove('id')
-        ..removeWhere((_, v) => v == null);
+  Map<String, dynamic> _attrs(Map<String, dynamic> json) => json
+    ..remove('id')
+    ..removeWhere((_, v) => v == null);
 
   // Tasks
 
@@ -59,7 +53,9 @@ class SpoolService {
   }
 
   Future<Task> updateTask(Task task) async {
-    final attrs = _attrs(task.toJson())..remove('created_by');
+    final attrs = task.toJson()
+      ..remove('id')
+      ..remove('created_by'); // not in the update action's accept list
     final res = await dio.patch(
       '/tasks/${task.id}',
       data: {

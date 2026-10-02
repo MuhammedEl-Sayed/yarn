@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:yarn/app_router.dart';
 import 'package:yarn/providers/spool_provider.dart';
 import 'package:yarn/services/spool_service.dart';
-import 'package:yarn/services/token_store.dart';
 import 'package:yarn/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   runApp(const MainApp());
 }
 
@@ -18,10 +19,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<TokenStore>(create: (_) => TokenStore()),
-        ProxyProvider<TokenStore, SpoolService>(
-          update: (_, tokens, _) => SpoolService.create(tokens),
-        ),
+        Provider<SpoolService>(create: (_) => SpoolService.create()),
         ChangeNotifierProvider<SpoolProvider>(
           create: (context) => SpoolProvider(context.read<SpoolService>()),
         ),

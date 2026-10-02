@@ -32,7 +32,6 @@ class ChoreDraft {
   final Repeat repeat;
   final List<String> repeatsOn;
   final String? assignedTo;
-  final int effort;
 
   const ChoreDraft({
     required this.title,
@@ -40,6 +39,5 @@ class ChoreDraft {
     required this.repeat,
     required this.repeatsOn,
     required this.assignedTo,
-    required this.effort,
   });
 }

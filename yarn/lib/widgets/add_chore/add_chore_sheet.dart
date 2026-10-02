@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yarn/widgets/add_chore/chore_models.dart';
 import 'package:yarn/theme/app_colors.dart';
-import 'package:yarn/widgets/add_chore/sections/effort_slider.dart';
 import 'package:yarn/widgets/add_chore/sections/repeat_picker.dart';
 import 'package:yarn/widgets/add_chore/sections/room_picker.dart';
 import 'package:yarn/widgets/add_chore/sections/shared.dart';
@@ -38,7 +37,6 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
   Repeat _repeat = Repeat.once;
   final Set<int> _days = {};
   String? _who;
-  double _effort = 3;
 
   @override
   void dispose() {
@@ -63,7 +61,6 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
             ? [for (final i in sorted) WeekdayPicker.letters[i]]
             : const [],
         assignedTo: _who,
-        effort: _effort.round(),
       ),
     );
   }
@@ -128,10 +125,6 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
               onChanged: (id) => setState(() => _who = id),
             ),
             const SizedBox(height: 22),
-            EffortSlider(
-              value: _effort,
-              onChanged: (v) => setState(() => _effort = v),
-            ),
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
