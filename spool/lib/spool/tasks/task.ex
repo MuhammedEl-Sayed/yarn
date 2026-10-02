@@ -19,6 +19,14 @@ defmodule Spool.Tasks.Task do
       authorize_if actor_present()
     end
   end 
+
+  relationships do
+    belongs_to :room, Spool.Rooms.Room do
+      allow_nil? true
+      public? true
+    end
+  end 
+
   attributes do
     uuid_primary_key(:id)
 
@@ -77,11 +85,6 @@ defmodule Spool.Tasks.Task do
       public?(true)
     end
 
-    attribute :room_id, :string do
-      allow_nil?(true)
-      public?(true)
-    end
-
     timestamps()
   end
 
@@ -101,7 +104,7 @@ defmodule Spool.Tasks.Task do
         :last_completed,
         :last_updated,
         :assigned_to,
-        :room_id
+        :room_id,
       ])
     end
 

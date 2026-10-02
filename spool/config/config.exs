@@ -16,7 +16,7 @@ config :spool,
   ecto_repos: [Spool.Repo],
   generators: [timestamp_type: :utc_datetime],
   # Domains only, not resources.
-  ash_domains: [Spool.Accounts, Spool.Tasks]
+  ash_domains: [Spool.Accounts, Spool.Tasks, Spool.Rooms]
 
 # Required by AshJsonApi: lets Phoenix treat application/vnd.api+json as JSON
 config :mime,
