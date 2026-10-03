@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Room {
 
- String get id; String get name; String? get createdBy;
+ String get id; String get name; String? get createdBy;/// Index into `roomColors` (lib/theme/room_palette.dart).
+ int? get colorIndex;/// Key into `roomIcons` (lib/theme/room_palette.dart).
+ String? get icon;
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $RoomCopyWith<Room> get copyWith => _$RoomCopyWithImpl<Room>(this as Room, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.colorIndex, colorIndex) || other.colorIndex == colorIndex)&&(identical(other.icon, icon) || other.icon == icon));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,createdBy);
+int get hashCode => Object.hash(runtimeType,id,name,createdBy,colorIndex,icon);
 
 @override
 String toString() {
-  return 'Room(id: $id, name: $name, createdBy: $createdBy)';
+  return 'Room(id: $id, name: $name, createdBy: $createdBy, colorIndex: $colorIndex, icon: $icon)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $RoomCopyWith<$Res>  {
   factory $RoomCopyWith(Room value, $Res Function(Room) _then) = _$RoomCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? createdBy
+ String id, String name, String? createdBy, int? colorIndex, String? icon
 });
 
 
@@ -65,11 +67,13 @@ class _$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? createdBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? createdBy = freezed,Object? colorIndex = freezed,Object? icon = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String?,colorIndex: freezed == colorIndex ? _self.colorIndex : colorIndex // ignore: cast_nullable_to_non_nullable
+as int?,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -155,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? createdBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? createdBy,  int? colorIndex,  String? icon)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.name,_that.createdBy);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.colorIndex,_that.icon);case _:
   return orElse();
 
 }
@@ -176,10 +180,10 @@ return $default(_that.id,_that.name,_that.createdBy);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? createdBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? createdBy,  int? colorIndex,  String? icon)  $default,) {final _that = this;
 switch (_that) {
 case _Room():
-return $default(_that.id,_that.name,_that.createdBy);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.colorIndex,_that.icon);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +200,10 @@ return $default(_that.id,_that.name,_that.createdBy);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? createdBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? createdBy,  int? colorIndex,  String? icon)?  $default,) {final _that = this;
 switch (_that) {
 case _Room() when $default != null:
-return $default(_that.id,_that.name,_that.createdBy);case _:
+return $default(_that.id,_that.name,_that.createdBy,_that.colorIndex,_that.icon);case _:
   return null;
 
 }
@@ -211,12 +215,16 @@ return $default(_that.id,_that.name,_that.createdBy);case _:
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _Room implements Room {
-  const _Room({required this.id, required this.name, this.createdBy});
+  const _Room({required this.id, required this.name, this.createdBy, this.colorIndex, this.icon});
   factory _Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  String? createdBy;
+/// Index into `roomColors` (lib/theme/room_palette.dart).
+@override final  int? colorIndex;
+/// Key into `roomIcons` (lib/theme/room_palette.dart).
+@override final  String? icon;
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Room&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.colorIndex, colorIndex) || other.colorIndex == colorIndex)&&(identical(other.icon, icon) || other.icon == icon));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,createdBy);
+int get hashCode => Object.hash(runtimeType,id,name,createdBy,colorIndex,icon);
 
 @override
 String toString() {
-  return 'Room(id: $id, name: $name, createdBy: $createdBy)';
+  return 'Room(id: $id, name: $name, createdBy: $createdBy, colorIndex: $colorIndex, icon: $icon)';
 }
 
 
@@ -251,7 +259,7 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
   factory _$RoomCopyWith(_Room value, $Res Function(_Room) _then) = __$RoomCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? createdBy
+ String id, String name, String? createdBy, int? colorIndex, String? icon
 });
 
 
@@ -268,11 +276,13 @@ class __$RoomCopyWithImpl<$Res>
 
 /// Create a copy of Room
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? createdBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? createdBy = freezed,Object? colorIndex = freezed,Object? icon = freezed,}) {
   return _then(_Room(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
+as String?,colorIndex: freezed == colorIndex ? _self.colorIndex : colorIndex // ignore: cast_nullable_to_non_nullable
+as int?,icon: freezed == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

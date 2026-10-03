@@ -10,6 +10,12 @@ abstract class Room with _$Room {
     required String id,
     required String name,
     String? createdBy,
+
+    /// Index into `roomColors` (lib/theme/room_palette.dart).
+    int? colorIndex,
+
+    /// Key into `roomIcons` (lib/theme/room_palette.dart).
+    String? icon,
   }) = _Room;
 
   factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);

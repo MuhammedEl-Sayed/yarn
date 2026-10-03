@@ -19,11 +19,10 @@ _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
           ?.map((e) => e as String)
           .toList() ??
       const <String>[],
-  monthlyOn: (json['monthly_on'] as num?)?.toInt() ?? 1,
+  monthlyOn: (json['monthly_on'] as num?)?.toInt(),
   lastCompleted: json['last_completed'] == null
       ? null
       : DateTime.parse(json['last_completed'] as String),
-  lastUpdated: DateTime.parse(json['last_updated'] as String),
   assignedTo:
       (json['assigned_to'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -43,7 +42,6 @@ Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'repeats_on': instance.repeatsOn,
   'monthly_on': instance.monthlyOn,
   'last_completed': instance.lastCompleted?.toIso8601String(),
-  'last_updated': instance.lastUpdated.toIso8601String(),
   'assigned_to': instance.assignedTo,
   'room_id': instance.roomId,
 };

@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-enum Repeat { once, daily, weekly, custom }
+/// Names match the stored `repUnit` strings and `RepititionUnit`.
+/// `once` is stored as 'once' and never gets a next due date.
+enum Repeat { once, day, week, month, year }
 
 class RoomOption {
   final String id;
@@ -27,17 +29,30 @@ class PersonOption {
 }
 
 class ChoreDraft {
+  /// Null when creating, the task id when editing.
+  final String? id;
   final String title;
   final String? roomId;
   final Repeat repeat;
+
+  /// "Every N days/weeks/months/years".
+  final int every;
+
+  /// Weekday codes ('M','T','W','TH','F','S','SU'); only for weekly.
   final List<String> repeatsOn;
+
+  /// Day of month 1-31 (31 = last day); only for monthly.
+  final int? monthlyOn;
   final String? assignedTo;
 
   const ChoreDraft({
+    this.id,
     required this.title,
     required this.roomId,
     required this.repeat,
-    required this.repeatsOn,
+    this.every = 1,
+    this.repeatsOn = const [],
+    this.monthlyOn,
     required this.assignedTo,
   });
 }

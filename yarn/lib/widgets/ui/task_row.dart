@@ -7,12 +7,18 @@ class TaskRow extends StatelessWidget {
   final Task task;
   final String? roomName;
   final VoidCallback onToggle;
+  final bool isEditMode;
+  final VoidCallback onEditTap;
+  final VoidCallback onDeleteTap;
 
   const TaskRow({
     super.key,
     required this.task,
     required this.onToggle,
     this.roomName,
+    required this.isEditMode,
+    required this.onEditTap,
+    required this.onDeleteTap,
   });
 
   static const _swatches = [
@@ -73,32 +79,60 @@ class TaskRow extends StatelessWidget {
               ],
             ),
           ),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onToggle,
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: done ? _doneGreen : Colors.transparent,
-                    border: Border.all(
-                      color: done ? _doneGreen : AppColors.line,
-                      width: 2,
+
+          !isEditMode
+              ? GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onToggle,
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: done ? _doneGreen : Colors.transparent,
+                          border: Border.all(
+                            color: done ? _doneGreen : AppColors.line,
+                            width: 2,
+                          ),
+                        ),
+                        child: done
+                            ? const Icon(
+                                Icons.check,
+                                size: 18,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
                     ),
                   ),
-                  child: done
-                      ? const Icon(Icons.check, size: 18, color: Colors.white)
-                      : null,
+                )
+              : Row(
+                  children: [
+                    Container(
+                      color: Theme.of(context).colorScheme.secondary,
+                      child: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          onEditTap();
+                        },
+                      ),
+                    ),
+                    Container(
+                      color: Theme.of(context).colorScheme.primary,
+                      child: IconButton(
+                        icon: Icon(Icons.cancel),
+                        onPressed: () {
+                          onDeleteTap();
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ),
         ],
       ),
     );

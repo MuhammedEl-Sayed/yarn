@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yarn/widgets/screens/placeholder_screen.dart';
+import 'package:yarn/widgets/screens/rooms/rooms_screen.dart';
 import 'package:yarn/widgets/screens/today_screen.dart';
 
 final appRouter = GoRouter(
@@ -18,18 +19,7 @@ final appRouter = GoRouter(
               icon: Icon(Icons.home_outlined),
               label: 'Today',
             ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_today_outlined),
-              label: 'Week',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.people_outline),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              label: 'Me',
-            ),
+            NavigationDestination(icon: Icon(Icons.chair), label: 'Rooms'),
           ],
         ),
       ),
@@ -39,28 +29,10 @@ final appRouter = GoRouter(
             GoRoute(path: '/today', builder: (_, _) => const TodayScreen()),
           ],
         ),
+
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/week',
-              builder: (_, _) => const PlaceholderScreen('Week'),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              builder: (_, _) => const PlaceholderScreen('Home'),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/me',
-              builder: (_, _) => const PlaceholderScreen('Me'),
-            ),
+            GoRoute(path: '/room', builder: (_, _) => const RoomsScreen()),
           ],
         ),
       ],

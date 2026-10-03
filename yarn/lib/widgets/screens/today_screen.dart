@@ -1,14 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:yarn/models/room.dart';
 import 'package:yarn/models/task.dart';
 import 'package:yarn/providers/spool_provider.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
-import 'package:yarn/widgets/add_chore/add_chore_sheet.dart';
-import 'package:yarn/widgets/add_chore/chore_models.dart';
+import 'package:yarn/utils/chore_flow.dart';
 import 'package:yarn/widgets/ui/task_row.dart';
 
 class TodayScreen extends StatefulWidget {
@@ -20,14 +18,10 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> {
   static const _all = 'All';
-  static const _roomColors = [
-    Color(0xFFE5A58E), // terracotta
-    Color(0xFFB9C7AE), // sage
-    Color(0xFFEBCB8B), // gold
-    Color(0xFF7C9CC4), // blue
-  ];
 
   String _filter = _all; // 'All' or a room id
+
+  bool isEditMode = false;
 
   @override
   void initState() {
@@ -53,56 +47,21 @@ class _TodayScreenState extends State<TodayScreen> {
     }
   }
 
-  Future<void> _openAddChore() async {
-    final provider = context.read<SpoolProvider>();
-    final draft = await showAddChoreSheet(
-      context,
-      rooms: [
-        for (final (i, r) in provider.rooms.indexed)
-          RoomOption(
-            id: r.id,
-            label: r.name,
-            color: _roomColors[i % _roomColors.length],
-          ),
-      ],
-      people: const [],
-    );
-    if (draft == null || !mounted) return;
-
-    try {
-      await provider.addTask(
-        Task(
-          id: '', // server assigns
-          createdBy: dotenv.env['SPOOL_USER'] ?? 'me',
-          name: draft.title,
-          repUnit: _repUnit(draft.repeat),
-          every: 1,
-          repeatsOn: draft.repeatsOn,
-          monthlyOn: 1,
-          lastUpdated: DateTime.now().toUtc(),
-          assignedTo: [if (draft.assignedTo != null) draft.assignedTo!],
-          roomId: draft.roomId,
-        ),
-      );
-    } catch (e) {
-      _logError('ADD', e);
-      if (mounted) _showError("Couldn't add chore");
-    }
-  }
-
-  // TODO: match these strings to your Spool.Tasks.Task.RepUnit values.
-  String _repUnit(Repeat r) => switch (r.name) {
-    'weekly' => 'week',
-    'monthly' => 'month',
-    _ => 'day',
-  };
-
   Future<void> _toggle(Task t) async {
     try {
       await context.read<SpoolProvider>().toggleTask(t);
     } catch (e) {
       _logError('TOGGLE', e);
       if (mounted) _showError("Couldn't update chore");
+    }
+  }
+
+  Future<void> _deleteTask(Task t) async {
+    try {
+      await context.read<SpoolProvider>().deleteTask(t.id);
+    } catch (e) {
+      _logError('DELETETASK', e);
+      if (mounted) _showError("Couldn't delete task");
     }
   }
 
@@ -120,10 +79,9 @@ class _TodayScreenState extends State<TodayScreen> {
     final roomNames = {for (final Room r in rooms) r.id: r.name};
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddChore,
-        icon: const Icon(Icons.add),
-        label: const Text('Cast on'),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () => openChoreSheet(context, null),
+        child: const Icon(Icons.add),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -134,7 +92,9 @@ class _TodayScreenState extends State<TodayScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    const _TopBar(),
+                    _TopBar(
+                      onPressed: () => setState(() => isEditMode = !isEditMode),
+                    ),
                     const SizedBox(height: 16),
                     _ProgressCard(done: done, total: tasks.length),
                     const SizedBox(height: 16),
@@ -168,9 +128,7 @@ class _TodayScreenState extends State<TodayScreen> {
                   hasScrollBody: false,
                   child: Center(
                     child: Text(
-                      loading
-                          ? 'Loading…'
-                          : error ?? 'No chores yet. Tap "Cast on" to add one.',
+                      loading ? 'Loading…' : error ?? 'No chores yet.',
                       style: AppText.body(
                         14,
                         color: AppColors.ink.withValues(alpha: 0.55),
@@ -190,6 +148,9 @@ class _TodayScreenState extends State<TodayScreen> {
                         task: t,
                         roomName: roomNames[t.roomId],
                         onToggle: () => _toggle(t),
+                        isEditMode: isEditMode,
+                        onDeleteTap: () => _deleteTask(t),
+                        onEditTap: () => openChoreSheet(context, t),
                       );
                     },
                   ),
@@ -203,7 +164,9 @@ class _TodayScreenState extends State<TodayScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar();
+  final VoidCallback onPressed;
+
+  const _TopBar({required this.onPressed});
 
   static const _days = [
     'Monday',
@@ -232,19 +195,26 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          '${_days[now.weekday - 1]}, ${_months[now.month - 1]} ${now.day}',
-          style: AppText.body(
-            14,
-            weight: FontWeight.w700,
-            color: AppColors.ink.withValues(alpha: 0.55),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_days[now.weekday - 1]}, ${_months[now.month - 1]} ${now.day}',
+                style: AppText.body(
+                  14,
+                  weight: FontWeight.w700,
+                  color: AppColors.ink.withValues(alpha: 0.55),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text("Today's chores", style: AppText.display(32)),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
-        Text("Today's chores", style: AppText.display(32)),
+        IconButton(icon: const Icon(Icons.edit), onPressed: onPressed),
       ],
     );
   }

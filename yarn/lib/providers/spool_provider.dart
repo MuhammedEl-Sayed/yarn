@@ -49,12 +49,15 @@ class SpoolProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Saves edits to an existing task (name, repeat, room, ...).
+  Future<void> updateTask(Task task) async {
+    final saved = await _service.updateTask(task);
+    _replaceTask(saved);
+  }
+
   Future<void> toggleTask(Task task) async {
     final now = DateTime.now().toUtc();
-    final flipped = task.copyWith(
-      lastCompleted: task.isDoneToday ? null : now,
-      lastUpdated: now,
-    );
+    final flipped = task.copyWith(lastCompleted: task.isDoneToday ? null : now);
     _replaceTask(flipped);
     try {
       _replaceTask(await _service.updateTask(flipped));
@@ -70,10 +73,12 @@ class SpoolProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addRoom(Room room) async {
+  /// Returns the created room so callers can attach starter chores to it.
+  Future<Room> addRoom(Room room) async {
     final created = await _service.createRoom(room);
     _rooms = [..._rooms, created];
     notifyListeners();
+    return created;
   }
 
   Future<void> updateRoom(Room room) async {
