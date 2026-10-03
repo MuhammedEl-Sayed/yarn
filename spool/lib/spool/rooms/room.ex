@@ -26,18 +26,9 @@ defmodule Spool.Rooms.Room do
     attribute :created_by, :string, allow_nil?: false, public?: true
     attribute :name, :string, allow_nil?: false, public?: true
     attribute :assigned_to, {:array, :string}, default: [], public?: true
-    attribute :image_path, :string, public?: true
+    attribute :icon, :string, allow_nil?: true, public?: true
 
-    attribute :icon, :map do
-      allow_nil? true
-      public? true
-
-      constraints fields: [
-        code_point: [type: :integer, allow_nil?: false],
-        font_family: [type: :string],
-        font_package: [type: :string]
-      ]
-    end
+    attribute :color_index, :integer, allow_nil?: true, public?: true
 
     timestamps()
   end
@@ -46,11 +37,11 @@ defmodule Spool.Rooms.Room do
     defaults([:read, :destroy])
 
     create :create do
-      accept([:created_by, :name, :assigned_to, :image_path, :icon])
+      accept([:created_by, :name, :assigned_to, :icon, :color_index])
     end
 
     update :update do
-      accept([:name, :assigned_to, :image_path, :icon])
+      accept([:name, :assigned_to, :color_index, :icon])
     end
   end
 end
