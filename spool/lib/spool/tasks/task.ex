@@ -18,14 +18,14 @@ defmodule Spool.Tasks.Task do
     policy always() do
       authorize_if actor_present()
     end
-  end 
+  end
 
   relationships do
     belongs_to :room, Spool.Rooms.Room do
       allow_nil? true
       public? true
     end
-  end 
+  end
 
   attributes do
     uuid_primary_key(:id)
@@ -75,11 +75,6 @@ defmodule Spool.Tasks.Task do
       public?(true)
     end
 
-    attribute :last_updated, :utc_datetime_usec do
-      allow_nil?(false)
-      public?(true)
-    end
-
     attribute :assigned_to, {:array, :string} do
       default([])
       public?(true)
@@ -102,7 +97,6 @@ defmodule Spool.Tasks.Task do
         :repeats_on,
         :monthly_on,
         :last_completed,
-        :last_updated,
         :assigned_to,
         :room_id,
       ])
@@ -118,7 +112,6 @@ defmodule Spool.Tasks.Task do
         :repeats_on,
         :monthly_on,
         :last_completed,
-        :last_updated,
         :assigned_to,
         :room_id
       ])
