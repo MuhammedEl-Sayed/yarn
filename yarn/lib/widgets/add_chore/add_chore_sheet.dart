@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yarn/models/task.dart';
+import 'package:yarn/models/user.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/widgets/add_chore/chore_models.dart';
 import 'package:yarn/widgets/add_chore/sections/repeat_picker.dart';
@@ -14,7 +15,7 @@ Future<ChoreDraft?> showAddChoreSheet(
   BuildContext context,
   Task? task, {
   required List<RoomOption> rooms,
-  required List<PersonOption> people,
+  required List<User> people,
   String? initialRoomId,
 }) {
   return showModalBottomSheet<ChoreDraft>(
@@ -33,7 +34,7 @@ Future<ChoreDraft?> showAddChoreSheet(
 
 class AddChoreSheet extends StatefulWidget {
   final List<RoomOption> rooms;
-  final List<PersonOption> people;
+  final List<User> people;
   final Task? task;
   final String? initialRoomId;
 
@@ -148,11 +149,14 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              _isEditing ? 'Edit chore' : 'Cast on a new chore',
+              _isEditing ? 'Edit chore' : 'Add a new chore',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 18),
-            TitleField(controller: _title),
+            TitleField(
+              controller: _title,
+              labelText: "No don't ask the cats for help",
+            ),
             if (widget.rooms.isNotEmpty) ...[
               const SizedBox(height: 22),
               const SectionLabel('Room yarn'),

@@ -11,7 +11,17 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+# Firebase client config (regenerate with `flutterfire configure`)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+firebase.json
 
+# Real secrets, never commit
+*.p8
+AuthKey_*.p8
+*service-account*.json
+.env
 # IntelliJ related
 *.iml
 *.ipr

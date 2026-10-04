@@ -4,18 +4,27 @@ defmodule Spool.Accounts.User do
     domain: Spool.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshAuthentication]
+    extensions: [AshAuthentication, AshJsonApi.Resource]
 
   postgres do
     table("users")
     repo(Spool.Repo)
   end
 
+  json_api do
+    type "user"
+  end
+
   policies do
     bypass(AshAuthentication.Checks.AshAuthenticationInteraction) do
       authorize_if(always())
     end
-  end
+
+    
+    policy action([:read, :me]) do
+      authorize_if actor_present()
+    end
+    end
 
   authentication do
     add_ons do
@@ -42,7 +51,10 @@ defmodule Spool.Accounts.User do
 
   attributes do
     uuid_primary_key(:id)
+
+    attribute :name, :string, allow_nil?: true, public?: true
   end
+  
 
   relationships do
     has_many :valid_api_keys, Spool.Accounts.ApiKey do
@@ -52,6 +64,11 @@ defmodule Spool.Accounts.User do
 
   actions do
     defaults([:read])
+
+    read :me do
+        get? true
+        filter expr(id == ^actor(:id))
+    end
 
     read :get_by_subject do
       description("Get a user by the subject claim in a JWT")
@@ -65,7 +82,7 @@ defmodule Spool.Accounts.User do
       prepare(AshAuthentication.Strategy.ApiKey.SignInPreparation)
     end
 create :create do
-  accept []
+  accept [:name]
 end
   end
 end

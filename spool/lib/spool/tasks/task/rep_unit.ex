@@ -1,3 +1,4 @@
 defmodule Spool.Tasks.Task.RepUnit do
-  use Ash.Type.Enum, values: [:day, :week, :month]
+  use Ash.Type.Enum, values: [:once, :day, :week, :month, :year]
 end
+

@@ -16,18 +16,6 @@ class RoomOption {
   });
 }
 
-class PersonOption {
-  final String id;
-  final String initial;
-  final Color color;
-
-  const PersonOption({
-    required this.id,
-    required this.initial,
-    required this.color,
-  });
-}
-
 class ChoreDraft {
   /// Null when creating, the task id when editing.
   final String? id;

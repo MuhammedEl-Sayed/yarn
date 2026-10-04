@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:yarn/models/room.dart';
 import 'package:yarn/models/task.dart';
+import 'package:yarn/models/user.dart';
 
 class SpoolService {
   static const _baseUrl = String.fromEnvironment('SPOOL_BASE_URL');
@@ -11,18 +12,18 @@ class SpoolService {
   SpoolService(this.dio);
 
   factory SpoolService.create() {
-    return SpoolService(
-      Dio(
-        BaseOptions(
-          baseUrl: dotenv.env['SPOOL_BASE_URL']!,
-          headers: {
-            'Accept': _jsonApi,
-            'Content-Type': _jsonApi,
-            'Authorization': 'Bearer ${dotenv.env['SPOOL_API_KEY']}',
-          },
-        ),
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: dotenv.env['SPOOL_BASE_URL']!,
+        headers: {
+          'Accept': _jsonApi,
+          'Content-Type': _jsonApi,
+          'Authorization': 'Bearer ${dotenv.env['SPOOL_API_KEY']}',
+        },
       ),
     );
+    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+    return SpoolService(dio);
   }
   Map<String, dynamic> _withId(Map resource) => {
     'id': resource['id'],
@@ -101,5 +102,17 @@ class SpoolService {
 
   Future<void> deleteRoom(String id) async {
     await dio.delete('/rooms/$id');
+  }
+
+  Future<List<User>> getUsers() async {
+    final res = await dio.get('/users');
+    return (res.data['data'] as List)
+        .map((e) => User.fromJson(_withId(e as Map)))
+        .toList();
+  }
+
+  Future<User> identify() async {
+    final res = await dio.get('/users/me');
+    return User.fromJson(_withId(res.data['data'] as Map));
   }
 }

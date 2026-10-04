@@ -36,7 +36,6 @@ abstract class Task with _$Task {
 }
 
 extension TaskX on Task {
-  /// There is no is_done column, so "done" means completed today.
   bool get isDoneToday {
     final c = lastCompleted?.toLocal();
     if (c == null) return false;
@@ -50,5 +49,35 @@ extension TaskX on Task {
     if (unit == null) return null;
     final base = (lastCompleted ?? DateTime.now()).toLocal();
     return TaskUtils().nextDueTime(unit, every, repeatsOn, monthlyOn, base);
+  }
+
+  bool get isDueToday {
+    if (isDoneToday) return true;
+    if (repUnit == 'once') return lastCompleted == null;
+    if (lastCompleted == null) return _isDueFirstTime;
+
+    final next = nextDueDate;
+    if (next == null) return true; // unknown unit: don't hide it
+    final n = DateTime.now();
+    final today = DateTime(n.year, n.month, n.day);
+    // Compare dates, not times, so chores show all day rather than from 7am.
+    return !DateTime(next.year, next.month, next.day).isAfter(today);
+  }
+
+  bool get _isDueFirstTime {
+    final now = DateTime.now();
+    switch (repUnit) {
+      case 'week':
+        return repeatsOn.isEmpty ||
+            repeatsOn.any(
+              (c) => TaskUtils.dayToInt[c.toUpperCase()] == now.weekday,
+            );
+      case 'month':
+        final lastDay = DateTime(now.year, now.month + 1, 0).day;
+        final want = (monthlyOn ?? now.day).clamp(1, lastDay).toInt();
+        return now.day >= want;
+      default:
+        return true; // day, year
+    }
   }
 }

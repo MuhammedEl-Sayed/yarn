@@ -50,6 +50,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
     final provider = context.read<SpoolProvider>();
     final draft = await showAddRoomSheet(
       context,
+      people: provider.users,
       nextColorIndex: provider.rooms.length,
     );
     if (draft == null || !mounted) return;

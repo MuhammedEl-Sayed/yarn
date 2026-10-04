@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yarn/models/room.dart';
 import 'package:yarn/models/task.dart';
+import 'package:yarn/models/user.dart';
 import 'package:yarn/services/spool_service.dart';
 
 /// Single place that talks to the API. Methods call the service first and then
@@ -12,11 +13,15 @@ class SpoolProvider extends ChangeNotifier {
 
   List<Task> _tasks = const [];
   List<Room> _rooms = const [];
+  User? _currUser;
+  List<User> _users = const [];
   bool _loading = false;
   String? _error;
 
   List<Task> get tasks => _tasks;
   List<Room> get rooms => _rooms;
+  User? get currUser => _currUser;
+  List<User> get users => _users;
   bool get loading => _loading;
   String? get error => _error;
 
@@ -31,12 +36,16 @@ class SpoolProvider extends ChangeNotifier {
       final results = await Future.wait([
         _service.getTasks(),
         _service.getRooms(),
+        _service.identify(),
+        _service.getUsers(),
       ]);
       _tasks = results[0] as List<Task>;
       _rooms = results[1] as List<Room>;
+      _currUser = results[2] as User;
+      _users = results[3] as List<User>;
     } catch (e) {
       debugPrint('init failed: $e');
-      _error = "Couldn't load your chores";
+      _error = "Couldn't load server data";
     } finally {
       _loading = false;
       notifyListeners();

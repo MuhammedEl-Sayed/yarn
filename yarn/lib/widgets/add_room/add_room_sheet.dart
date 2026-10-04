@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:yarn/models/user.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/theme/room_palette.dart';
 import 'package:yarn/widgets/add_chore/chore_models.dart';
 import 'package:yarn/widgets/add_chore/sections/shared.dart' show SectionLabel;
+import 'package:yarn/widgets/add_chore/sections/title_field.dart';
+import 'package:yarn/widgets/add_chore/sections/who_picker.dart';
 import 'package:yarn/widgets/ui/skein_ball.dart';
 
 class StarterChore {
@@ -79,19 +82,26 @@ class RoomDraft {
 Future<RoomDraft?> showAddRoomSheet(
   BuildContext context, {
   required int nextColorIndex,
+  required List<User> people,
 }) {
   return showModalBottomSheet<RoomDraft>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     barrierColor: const Color(0x8033261F),
-    builder: (_) => AddRoomSheet(nextColorIndex: nextColorIndex),
+    builder: (_) =>
+        AddRoomSheet(nextColorIndex: nextColorIndex, people: people),
   );
 }
 
 class AddRoomSheet extends StatefulWidget {
   final int nextColorIndex;
-  const AddRoomSheet({super.key, required this.nextColorIndex});
+  final List<User> people;
+  const AddRoomSheet({
+    super.key,
+    required this.nextColorIndex,
+    required this.people,
+  });
 
   @override
   State<AddRoomSheet> createState() => _AddRoomSheetState();
@@ -103,6 +113,8 @@ class _AddRoomSheetState extends State<AddRoomSheet> {
   String _icon = roomIcons.keys.first;
   List<StarterChore> _shown = const [];
   Set<StarterChore> _selected = {};
+
+  String? _who;
 
   @override
   void initState() {
@@ -219,14 +231,9 @@ class _AddRoomSheetState extends State<AddRoomSheet> {
               ),
             ),
             const SizedBox(height: 18),
-            TextField(
-              controller: _name,
-              textCapitalization: TextCapitalization.words,
-              style: AppText.body(16, weight: FontWeight.w800),
-              decoration: const InputDecoration(labelText: 'Room name'),
-            ),
+            TitleField(controller: _name, labelText: "Room name"),
             const SizedBox(height: 22),
-            const SectionLabel('Yarn color'),
+            const SectionLabel('Color'),
             const SizedBox(height: 10),
             Wrap(
               spacing: 14,
@@ -348,6 +355,13 @@ class _AddRoomSheetState extends State<AddRoomSheet> {
                   ),
                 ),
             ],
+            const SectionLabel('Who'),
+            const SizedBox(height: 10),
+            WhoPicker(
+              people: widget.people,
+              selectedId: _who,
+              onChanged: (id) => setState(() => _who = id),
+            ),
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,

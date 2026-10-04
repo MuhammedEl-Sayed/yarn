@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,8 @@ import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/utils/chore_flow.dart';
 import 'package:yarn/widgets/ui/task_row.dart';
 
+/// UTC date-only value, so day math is immune to daylight saving changes.
+
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
 
@@ -16,19 +20,37 @@ class TodayScreen extends StatefulWidget {
   State<TodayScreen> createState() => _TodayScreenState();
 }
 
-class _TodayScreenState extends State<TodayScreen> {
+class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   static const _all = 'All';
 
   String _filter = _all; // 'All' or a room id
+  String _person = _all; // 'All' or a user name
 
   bool isEditMode = false;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SpoolProvider>().init();
-    });
+    WidgetsBinding.instance.addObserver(this);
+    _poll = Timer.periodic(const Duration(seconds: 45), (_) => _refresh());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) context.read<SpoolProvider>().init();
   }
 
   void _showError(String message) {
@@ -69,13 +91,21 @@ class _TodayScreenState extends State<TodayScreen> {
   Widget build(BuildContext context) {
     final tasks = context.select((SpoolProvider p) => p.tasks);
     final rooms = context.select((SpoolProvider p) => p.rooms);
+    final users = context.select((SpoolProvider p) => p.users);
     final error = context.select((SpoolProvider p) => p.error);
     final loading = context.select((SpoolProvider p) => p.loading);
 
-    final visible = _filter == _all
-        ? tasks
-        : tasks.where((t) => t.roomId == _filter).toList();
-    final done = tasks.where((t) => t.isDoneToday).length;
+    final visible = tasks.where((t) {
+      final roomOk = _filter == _all || t.roomId == _filter;
+      final personOk = _person == _all || t.assignedTo.contains(_person);
+      if (isEditMode) {
+        // Edit mode shows everything so you can fix or delete any chore.
+        return roomOk && personOk;
+      }
+      return t.isActive && roomOk && personOk && t.isDueToday;
+    }).toList();
+
+    final done = visible.where((t) => t.isDoneToday).length;
     final roomNames = {for (final Room r in rooms) r.id: r.name};
 
     return Scaffold(
@@ -96,8 +126,9 @@ class _TodayScreenState extends State<TodayScreen> {
                       onPressed: () => setState(() => isEditMode = !isEditMode),
                     ),
                     const SizedBox(height: 16),
-                    _ProgressCard(done: done, total: tasks.length),
+                    _ProgressCard(done: done, total: visible.length),
                     const SizedBox(height: 16),
+                    // Room filter
                     SizedBox(
                       height: 40,
                       child: ListView(
@@ -119,6 +150,29 @@ class _TodayScreenState extends State<TodayScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    // Person filter
+                    SizedBox(
+                      height: 40,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          _FilterChip(
+                            label: 'Everyone',
+                            selected: _person == _all,
+                            onTap: () => setState(() => _person = _all),
+                          ),
+                          for (final u in users) ...[
+                            const SizedBox(width: 8),
+                            _FilterChip(
+                              label: u.name,
+                              selected: _person == u.name,
+                              onTap: () => setState(() => _person = u.name),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 12),
                   ]),
                 ),
@@ -128,7 +182,7 @@ class _TodayScreenState extends State<TodayScreen> {
                   hasScrollBody: false,
                   child: Center(
                     child: Text(
-                      loading ? 'Loading…' : error ?? 'No chores yet.',
+                      loading ? 'Loading…' : error ?? 'Nothing due today.',
                       style: AppText.body(
                         14,
                         color: AppColors.ink.withValues(alpha: 0.55),

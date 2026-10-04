@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "387336911137",
+    "project_id": "yarn-chores",
+    "storage_bucket": "yarn-chores.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387336911137:android:e1be0c3f93442ce0e5e660",
+        "android_client_info": {
+          "package_name": "com.example.yarn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuWVJIwQzDlvnmCZah7YqivfcGPLxL3kI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387336911137:android:c8e1c76cf926bdffe5e660",
+        "android_client_info": {
+          "package_name": "com.melsayed.yarn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuWVJIwQzDlvnmCZah7YqivfcGPLxL3kI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

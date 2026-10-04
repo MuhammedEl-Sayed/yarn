@@ -29,7 +29,7 @@ Future<void> openChoreSheet(
           color: roomColorAt(r.colorIndex, i),
         ),
     ],
-    people: const [],
+    people: provider.users,
   );
   if (draft == null) return;
 
@@ -61,7 +61,9 @@ Future<void> openChoreSheet(
     debugPrint('SAVE CHORE FAILED: $e');
     messenger.showSnackBar(
       SnackBar(
-        content: Text(task == null ? "Couldn't add chore" : "Couldn't save chore"),
+        content: Text(
+          task == null ? "Couldn't add chore" : "Couldn't save chore",
+        ),
       ),
     );
   }

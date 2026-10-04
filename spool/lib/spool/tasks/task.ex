@@ -66,7 +66,7 @@ defmodule Spool.Tasks.Task do
     end
 
     attribute :monthly_on, :integer do
-      allow_nil?(false)
+      allow_nil?(true)
       public?(true)
     end
 

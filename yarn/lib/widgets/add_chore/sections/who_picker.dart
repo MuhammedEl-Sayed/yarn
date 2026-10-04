@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:yarn/models/user.dart';
 import 'package:yarn/widgets/add_chore/chore_models.dart';
 import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/widgets/add_chore/sections/shared.dart';
 
 class WhoPicker extends StatelessWidget {
-  final List<PersonOption> people;
+  final List<User> people;
 
   final String? selectedId;
   final ValueChanged<String?> onChanged;
@@ -26,8 +27,8 @@ class WhoPicker extends StatelessWidget {
           for (final p in people)
             _avatar(
               selected: selectedId == p.id,
-              color: p.color,
-              label: p.initial,
+              color: p.name.startsWith('M') ? AppColors.accent : AppColors.gold,
+              label: p.name[0],
               labelColor: Colors.white,
               onTap: () => onChanged(p.id),
             ),

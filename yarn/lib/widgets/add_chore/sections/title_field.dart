@@ -4,7 +4,12 @@ import 'package:yarn/theme/app_colors.dart';
 
 class TitleField extends StatelessWidget {
   final TextEditingController controller;
-  const TitleField({super.key, required this.controller});
+  final String labelText;
+  const TitleField({
+    super.key,
+    required this.controller,
+    required this.labelText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +23,7 @@ class TitleField extends StatelessWidget {
       textCapitalization: TextCapitalization.sentences,
       style: AppText.body(18),
       decoration: InputDecoration(
-        labelText: 'What needs doing?',
+        labelText: labelText,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         labelStyle: AppText.body(12, weight: FontWeight.w800),
         floatingLabelStyle: AppText.body(12, weight: FontWeight.w800),
