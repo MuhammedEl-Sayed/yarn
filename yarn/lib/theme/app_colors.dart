@@ -9,4 +9,5 @@ class AppColors {
   static const accent = Color(0xFFC95F3F);
   static const gold = Color(0xFFD9A63A);
   static const unassigned = Color(0xFFCDBBA3);
+  static const background = Color(0xFFF6EFE4);
 }

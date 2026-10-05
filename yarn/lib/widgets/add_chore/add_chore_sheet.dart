@@ -97,7 +97,7 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
 
   void _toggleDay(int i) => setState(() {
     if (_days.contains(i)) {
-      if (_days.length > 1) _days.remove(i); // keep at least one day
+      _days.remove(i); // keep at least one day
     } else {
       _days.add(i);
     }
