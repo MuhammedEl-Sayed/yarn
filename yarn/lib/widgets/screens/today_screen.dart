@@ -25,7 +25,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
 
   String _filter = _all; // 'All' or a room id
   String _person = _all; // 'All' or a user name
-
+  bool _showCompleted = true;
   bool isEditMode = false;
   Timer? _poll;
 
@@ -102,12 +102,26 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
         // Edit mode shows everything so you can fix or delete any chore.
         return roomOk && personOk;
       }
-      return t.isActive && roomOk && personOk && t.isDueToday;
+      return t.isActive &&
+          roomOk &&
+          personOk &&
+          (t.isDueToday || t.isCompletedThisCycle);
     }).toList();
 
-    final done = visible.where((t) => t.isDoneToday).length;
+    final pending = visible.where((t) => !t.isDoneToday).toList();
+    final completed = visible.where((t) => t.isDoneToday).toList();
+    final done = completed.length;
     final roomNames = {for (final Room r in rooms) r.id: r.name};
-
+    Widget buildRow(Task t) => TaskRow(
+      key: ValueKey(t.id),
+      task: t,
+      users: users,
+      roomName: roomNames[t.roomId],
+      onToggle: () => _toggle(t),
+      isEditMode: isEditMode,
+      onDeleteTap: () => _deleteTask(t),
+      onEditTap: () => openChoreSheet(context, t),
+    );
     return Scaffold(
       floatingActionButton: FloatingActionButton.small(
         onPressed: () => openChoreSheet(context, null),
@@ -129,49 +143,41 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                     _ProgressCard(done: done, total: visible.length),
                     const SizedBox(height: 16),
                     // Room filter
-                    SizedBox(
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          _FilterChip(
-                            label: _all,
-                            selected: _filter == _all,
-                            onTap: () => setState(() => _filter = _all),
-                          ),
-                          for (final r in rooms) ...[
-                            const SizedBox(width: 8),
-                            _FilterChip(
-                              label: r.name,
-                              selected: _filter == r.id,
-                              onTap: () => setState(() => _filter = r.id),
+                    Row(
+                      children: [
+                        DropdownButton<String>(
+                          value: _filter,
+                          items: [
+                            const DropdownMenuItem(
+                              value: _all,
+                              child: Text(_all),
                             ),
+                            for (final r in rooms)
+                              DropdownMenuItem(
+                                value: r.name,
+                                child: Text(r.name),
+                              ),
                           ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Person filter
-                    SizedBox(
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          _FilterChip(
-                            label: 'Everyone',
-                            selected: _person == _all,
-                            onTap: () => setState(() => _person = _all),
-                          ),
-                          for (final u in users) ...[
-                            const SizedBox(width: 8),
-                            _FilterChip(
-                              label: u.name,
-                              selected: _person == u.name,
-                              onTap: () => setState(() => _person = u.name),
+                          onChanged: (v) => setState(() => _person = v ?? _all),
+                        ),
+                        const SizedBox(width: 16),
+                        // Person filter
+                        DropdownButton<String>(
+                          value: _person,
+                          items: [
+                            const DropdownMenuItem(
+                              value: _all,
+                              child: Text(_all),
                             ),
+                            for (final u in users)
+                              DropdownMenuItem(
+                                value: u.name,
+                                child: Text(u.name),
+                              ),
                           ],
-                        ],
-                      ),
+                          onChanged: (v) => setState(() => _person = v ?? _all),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                   ]),
@@ -190,25 +196,62 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                     ),
                   ),
                 )
-              else
+              else ...[
+                // Pending
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                   sliver: SliverList.builder(
-                    itemCount: visible.length,
-                    itemBuilder: (_, i) {
-                      final t = visible[i];
-                      return TaskRow(
-                        key: ValueKey(t.id),
-                        task: t,
-                        roomName: roomNames[t.roomId],
-                        onToggle: () => _toggle(t),
-                        isEditMode: isEditMode,
-                        onDeleteTap: () => _deleteTask(t),
-                        onEditTap: () => openChoreSheet(context, t),
-                      );
-                    },
+                    itemCount: pending.length,
+                    itemBuilder: (_, i) => buildRow(pending[i]),
                   ),
                 ),
+
+                // Completed header
+                if (completed.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () =>
+                            setState(() => _showCompleted = !_showCompleted),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Completed',
+                              style: AppText.body(
+                                14,
+                                weight: FontWeight.w800,
+                                color: AppColors.ink.withValues(alpha: 0.55),
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              _showCompleted
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              color: AppColors.ink.withValues(alpha: 0.55),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Completed rows
+                if (completed.isNotEmpty && _showCompleted)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    sliver: SliverList.builder(
+                      itemCount: completed.length,
+                      itemBuilder: (_, i) => buildRow(completed[i]),
+                    ),
+                  )
+                else
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
+                  ), // keeps FAB clearance
+              ],
             ],
           ),
         ),

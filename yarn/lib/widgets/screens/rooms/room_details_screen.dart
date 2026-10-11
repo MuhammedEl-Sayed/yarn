@@ -78,16 +78,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final room = context.select(
-      (SpoolProvider p) => p.roomById(widget.roomId),
-    );
+    final room = context.select((SpoolProvider p) => p.roomById(widget.roomId));
     final index = context.select(
       (SpoolProvider p) => p.rooms.indexWhere((r) => r.id == widget.roomId),
     );
     final tasks = context.select((SpoolProvider p) => p.tasks);
 
+    final users = context.select((SpoolProvider p) => p.users);
     if (room == null) {
-      return const Scaffold(body: SafeArea(child: Center(child: Text('Room not found'))));
+      return const Scaffold(
+        body: SafeArea(child: Center(child: Text('Room not found'))),
+      );
     }
 
     final color = roomColorAt(room.colorIndex, index < 0 ? 0 : index);
@@ -175,6 +176,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 TaskRow(
                   key: ValueKey(t.id),
                   task: t,
+                  users: users,
                   onToggle: () => _toggle(t),
                   isEditMode: _isEditMode,
                   onEditTap: () => openChoreSheet(context, t),

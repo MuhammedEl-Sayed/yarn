@@ -1,10 +1,13 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yarn/models/task.dart';
+import 'package:yarn/models/user.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
 
 class TaskRow extends StatelessWidget {
   final Task task;
+  final List<User> users;
   final String? roomName;
   final VoidCallback onToggle;
   final bool isEditMode;
@@ -14,6 +17,7 @@ class TaskRow extends StatelessWidget {
   const TaskRow({
     super.key,
     required this.task,
+    required this.users,
     required this.onToggle,
     this.roomName,
     required this.isEditMode,
@@ -33,10 +37,21 @@ class TaskRow extends StatelessWidget {
     final unit = task.repUnit.isEmpty
         ? ''
         : task.repUnit[0].toUpperCase() + task.repUnit.substring(1);
+    print("Task assignedTo: ${task.assignedTo}");
+    String assignedTo = '';
+    String nextDueDate = !task.isDoneToday
+        ? "Today"
+        : "${task.nextDueDate!.month}/${task.nextDueDate!.day}/${task.nextDueDate!.year}";
+    if (task.assignedTo.isNotEmpty) {
+      for (String s in task.assignedTo) {
+        assignedTo = users.firstWhere((u) => u.id == s).name;
+      }
+    }
     return [
       ?roomName,
-      if (task.assignedTo.isNotEmpty) task.assignedTo.join(', '),
+      assignedTo,
       unit,
+      nextDueDate,
     ].where((s) => s.isNotEmpty).join(' · ');
   }
 

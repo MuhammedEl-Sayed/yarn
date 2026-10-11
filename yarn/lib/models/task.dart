@@ -80,4 +80,13 @@ extension TaskX on Task {
         return true; // day, year
     }
   }
+
+  bool get isCompletedThisCycle {
+    if (lastCompleted == null || repUnit == 'once') return false;
+    final next = nextDueDate;
+    if (next == null) return false;
+    final n = DateTime.now();
+    final today = DateTime(n.year, n.month, n.day);
+    return DateTime(next.year, next.month, next.day).isAfter(today);
+  }
 }
