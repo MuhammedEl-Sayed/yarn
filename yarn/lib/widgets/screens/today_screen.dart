@@ -8,10 +8,10 @@ import 'package:yarn/models/task.dart';
 import 'package:yarn/providers/spool_provider.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
+import 'package:yarn/theme/room_palette.dart';
 import 'package:yarn/utils/chore_flow.dart';
+import 'package:yarn/widgets/ui/collapsible_section.dart';
 import 'package:yarn/widgets/ui/task_row.dart';
-
-/// UTC date-only value, so day math is immune to daylight saving changes.
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -23,9 +23,8 @@ class TodayScreen extends StatefulWidget {
 class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   static const _all = 'All';
 
-  String _filter = _all; // 'All' or a room id
+  final String _filter = _all; // 'All' or a room id
   String _person = _all; // 'All' or a user name
-  bool _showCompleted = true;
   bool isEditMode = false;
   Timer? _poll;
 
@@ -95,9 +94,25 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     final error = context.select((SpoolProvider p) => p.error);
     final loading = context.select((SpoolProvider p) => p.loading);
 
+    // Dropdown options as value -> label. Maps dedupe by value, so duplicate
+    // ids/names can't produce two items with the same value.
+    final roomOptions = <String, String>{
+      _all: _all,
+      for (final r in rooms) r.id: r.name,
+    };
+    final personOptions = <String, String>{
+      _all: _all,
+      for (final u in users) u.name: u.name,
+    };
+    // If the selected value no longer exists (room deleted, user renamed,
+    // data refreshed), fall back to 'All' instead of crashing the dropdown.
+    final roomFilter = roomOptions.containsKey(_filter) ? _filter : _all;
+    final personFilter = personOptions.containsKey(_person) ? _person : _all;
+
     final visible = tasks.where((t) {
-      final roomOk = _filter == _all || t.roomId == _filter;
-      final personOk = _person == _all || t.assignedTo.contains(_person);
+      final roomOk = roomFilter == _all || t.roomId == roomFilter;
+      final personOk =
+          personFilter == _all || t.assignedTo.contains(personFilter);
       if (isEditMode) {
         // Edit mode shows everything so you can fix or delete any chore.
         return roomOk && personOk;
@@ -112,6 +127,19 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     final completed = visible.where((t) => t.isDoneToday).toList();
     final done = completed.length;
     final roomNames = {for (final Room r in rooms) r.id: r.name};
+
+    // Group pending chores by room; anything without a known room goes to "Other".
+    final roomIds = {for (final r in rooms) r.id};
+    final byRoom = <String, List<Task>>{};
+    final noRoom = <Task>[];
+    for (final t in pending) {
+      if (t.roomId != null && roomIds.contains(t.roomId)) {
+        byRoom.putIfAbsent(t.roomId!, () => []).add(t);
+      } else {
+        noRoom.add(t);
+      }
+    }
+
     Widget buildRow(Task t) => TaskRow(
       key: ValueKey(t.id),
       task: t,
@@ -122,6 +150,7 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       onDeleteTap: () => _deleteTask(t),
       onEditTap: () => openChoreSheet(context, t),
     );
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.small(
         onPressed: () => openChoreSheet(context, null),
@@ -142,40 +171,13 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                     const SizedBox(height: 16),
                     _ProgressCard(done: done, total: visible.length),
                     const SizedBox(height: 16),
-                    // Room filter
                     Row(
                       children: [
-                        DropdownButton<String>(
-                          value: _filter,
-                          items: [
-                            const DropdownMenuItem(
-                              value: _all,
-                              child: Text(_all),
-                            ),
-                            for (final r in rooms)
-                              DropdownMenuItem(
-                                value: r.name,
-                                child: Text(r.name),
-                              ),
-                          ],
-                          onChanged: (v) => setState(() => _person = v ?? _all),
-                        ),
-                        const SizedBox(width: 16),
                         // Person filter
-                        DropdownButton<String>(
-                          value: _person,
-                          items: [
-                            const DropdownMenuItem(
-                              value: _all,
-                              child: Text(_all),
-                            ),
-                            for (final u in users)
-                              DropdownMenuItem(
-                                value: u.name,
-                                child: Text(u.name),
-                              ),
-                          ],
-                          onChanged: (v) => setState(() => _person = v ?? _all),
+                        _FilterDropdown(
+                          value: personFilter,
+                          options: personOptions,
+                          onChanged: (v) => setState(() => _person = v),
                         ),
                       ],
                     ),
@@ -197,54 +199,58 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                   ),
                 )
               else ...[
-                // Pending
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  sliver: SliverList.builder(
-                    itemCount: pending.length,
-                    itemBuilder: (_, i) => buildRow(pending[i]),
-                  ),
-                ),
-
-                // Completed header
-                if (completed.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () =>
-                            setState(() => _showCompleted = !_showCompleted),
-                        child: Row(
+                // One dropdown per room
+                for (var i = 0; i < rooms.length; i++)
+                  if (byRoom[rooms[i].id]?.isNotEmpty ?? false)
+                    SliverToBoxAdapter(
+                      key: ValueKey('room-${rooms[i].id}'),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                        child: CollapsibleSection(
+                          title: rooms[i].name,
+                          count: byRoom[rooms[i].id]!.length,
+                          titleStyle: AppText.body(15, weight: FontWeight.w800),
+                          leading: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: roomColorAt(rooms[i].colorIndex, i),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                           children: [
-                            Text(
-                              'Completed',
-                              style: AppText.body(
-                                14,
-                                weight: FontWeight.w800,
-                                color: AppColors.ink.withValues(alpha: 0.55),
-                              ),
-                            ),
-                            const Spacer(),
-                            Icon(
-                              _showCompleted
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                              color: AppColors.ink.withValues(alpha: 0.55),
-                            ),
+                            for (final t in byRoom[rooms[i].id]!) buildRow(t),
                           ],
                         ),
                       ),
                     ),
+
+                // Chores with no room
+                if (noRoom.isNotEmpty)
+                  SliverToBoxAdapter(
+                    key: const ValueKey('room-none'),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                      child: CollapsibleSection(
+                        title: 'Other',
+                        count: noRoom.length,
+                        titleStyle: AppText.body(15, weight: FontWeight.w800),
+                        children: [for (final t in noRoom) buildRow(t)],
+                      ),
+                    ),
                   ),
 
-                // Completed rows
-                if (completed.isNotEmpty && _showCompleted)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                    sliver: SliverList.builder(
-                      itemCount: completed.length,
-                      itemBuilder: (_, i) => buildRow(completed[i]),
+                // Completed (below all rooms)
+                if (completed.isNotEmpty)
+                  SliverToBoxAdapter(
+                    key: const ValueKey('completed'),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+                      child: CollapsibleSection(
+                        title: 'Completed',
+                        count: completed.length,
+                        children: [for (final t in completed) buildRow(t)],
+                      ),
                     ),
                   )
                 else
@@ -256,6 +262,34 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Dropdown over a value -> label map. Because options is a Map, every value
+/// is unique, and [value] must be one of its keys (callers guarantee this).
+class _FilterDropdown extends StatelessWidget {
+  final String value;
+  final Map<String, String> options;
+  final ValueChanged<String> onChanged;
+
+  const _FilterDropdown({
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      value: options.containsKey(value) ? value : null,
+      items: [
+        for (final e in options.entries)
+          DropdownMenuItem(value: e.key, child: Text(e.value)),
+      ],
+      onChanged: (v) {
+        if (v != null) onChanged(v);
+      },
     );
   }
 }

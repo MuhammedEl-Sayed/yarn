@@ -5,6 +5,15 @@ import 'package:yarn/models/user.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
 
+const mapBecauseImLazy = {
+  'Week': 'Weekly',
+  'Day': 'Daily',
+  'Year': 'Yearly',
+  'Month': 'Monthly',
+};
+
+enum _Due { overdue, today, upcoming, done }
+
 class TaskRow extends StatelessWidget {
   final Task task;
   final List<User> users;
@@ -33,26 +42,45 @@ class TaskRow extends StatelessWidget {
   ];
   static const _doneGreen = Color(0xFF7A9A78);
 
+  String _fmt(DateTime d) => '${d.month}/${d.day}';
+
+  DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  ({_Due kind, String label})? get _due {
+    final next = task.nextDueDate;
+    final today = _dateOnly(DateTime.now());
+
+    if (task.isDoneToday) {
+      return (
+        kind: _Due.done,
+        label: next == null ? 'Done' : 'Back ${_fmt(next)}',
+      );
+    }
+    // Never completed (or one-time): no schedule to show beyond "today".
+    if (task.lastCompleted == null || next == null) {
+      return task.isDueToday ? (kind: _Due.today, label: 'Today') : null;
+    }
+
+    final due = _dateOnly(next);
+    final days = due.difference(today).inDays;
+    if (days < 0) return (kind: _Due.overdue, label: _fmt(due));
+    if (days == 0) return (kind: _Due.today, label: 'Today');
+    if (days == 1) return (kind: _Due.upcoming, label: 'Tomorrow');
+    return (kind: _Due.upcoming, label: _fmt(due));
+  }
+
+  String get _assignees => task.assignedTo
+      .map((id) => users.where((u) => u.id == id).firstOrNull?.name)
+      .whereType<String>()
+      .join(', ');
+
   String get _subtitle {
     final unit = task.repUnit.isEmpty
         ? ''
-        : task.repUnit[0].toUpperCase() + task.repUnit.substring(1);
-    print("Task assignedTo: ${task.assignedTo}");
-    String assignedTo = '';
-    String nextDueDate = !task.isDoneToday
-        ? "Today"
-        : "${task.nextDueDate!.month}/${task.nextDueDate!.day}/${task.nextDueDate!.year}";
-    if (task.assignedTo.isNotEmpty) {
-      for (String s in task.assignedTo) {
-        assignedTo = users.firstWhere((u) => u.id == s).name;
-      }
-    }
-    return [
-      ?roomName,
-      assignedTo,
-      unit,
-      nextDueDate,
-    ].where((s) => s.isNotEmpty).join(' · ');
+        : mapBecauseImLazy[task.repUnit[0].toUpperCase() +
+                  task.repUnit.substring(1)] ??
+              '';
+    return [?roomName, _assignees, unit].where((s) => s.isNotEmpty).join(' · ');
   }
 
   @override
@@ -65,15 +93,6 @@ class TaskRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: swatch.withValues(alpha: done ? 0.5 : 1),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,6 +110,10 @@ class TaskRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(_subtitle, style: AppText.body(13, color: muted)),
+                if (_due case final due?) ...[
+                  const SizedBox(height: 6),
+                  _DuePill(kind: due.kind, label: due.label),
+                ],
               ],
             ),
           ),
@@ -148,6 +171,45 @@ class TaskRow extends StatelessWidget {
                     ),
                   ],
                 ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DuePill extends StatelessWidget {
+  final _Due kind;
+  final String label;
+  const _DuePill({required this.kind, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final (Color color, IconData icon) = switch (kind) {
+      _Due.overdue => (const Color(0xFFE5A58E), Icons.schedule),
+      _Due.today => (const Color(0xFFEBCB8B), Icons.wb_sunny_outlined),
+      _Due.upcoming => (const Color(0xFF7C9CC4), Icons.event_outlined),
+      _Due.done => (const Color(0xFF7A9A78), Icons.check_circle_outline),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.ink.withValues(alpha: 0.7)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppText.body(
+              12,
+              weight: FontWeight.w800,
+              color: AppColors.ink.withValues(alpha: 0.75),
+            ),
+          ),
         ],
       ),
     );

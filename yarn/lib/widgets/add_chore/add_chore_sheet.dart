@@ -159,7 +159,7 @@ class _AddChoreSheetState extends State<AddChoreSheet> {
             ),
             if (widget.rooms.isNotEmpty) ...[
               const SizedBox(height: 22),
-              const SectionLabel('Room yarn'),
+              const SectionLabel('Room'),
               const SizedBox(height: 10),
               RoomPicker(
                 rooms: widget.rooms,
