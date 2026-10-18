@@ -43,6 +43,15 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   json_serializable: ^6.8.0
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: 'assets/ball.png'
+  adaptive_icon_background: '#000000'
+  adaptive_icon_foreground: 'assets/ball.png'
+
+
 
 flutter:
   uses-material-design: true
