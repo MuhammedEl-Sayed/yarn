@@ -12,6 +12,20 @@ class TaskUtils {
     'SU': 7,
   };
 
+  static const List<String> shortDayNames = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+
+  /// Weekday code for a DateTime.weekday, the inverse of [dayToInt].
+  static String dayCode(int weekday) =>
+      dayToInt.entries.firstWhere((e) => e.value == weekday).key;
+
   /// Every chore is due at this hour.
   static const int dueHour = 7;
 

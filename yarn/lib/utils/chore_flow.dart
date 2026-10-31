@@ -68,3 +68,49 @@ Future<void> openChoreSheet(
     );
   }
 }
+
+/// Ticks or unticks a chore, with a snackbar if the save fails.
+Future<void> toggleChore(BuildContext context, Task task) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    await context.read<SpoolProvider>().toggleTask(task);
+  } catch (e) {
+    debugPrint('TOGGLE CHORE FAILED: $e');
+    messenger.showSnackBar(
+      const SnackBar(content: Text("Couldn't update chore")),
+    );
+  }
+}
+
+/// Asks before deleting, like deleting a room does.
+Future<void> confirmDeleteChore(BuildContext context, Task task) async {
+  final provider = context.read<SpoolProvider>();
+  final messenger = ScaffoldMessenger.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Delete ${task.name}?'),
+      content: const Text("This can't be undone."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+  if (ok != true) return;
+
+  try {
+    await provider.deleteTask(task.id);
+  } catch (e) {
+    debugPrint('DELETE CHORE FAILED: $e');
+    messenger.showSnackBar(
+      const SnackBar(content: Text("Couldn't delete chore")),
+    );
+  }
+}

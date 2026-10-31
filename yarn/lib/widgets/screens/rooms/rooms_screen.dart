@@ -7,6 +7,8 @@ import 'package:yarn/providers/spool_provider.dart';
 import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/theme/room_palette.dart';
+import 'package:yarn/utils/task_utils.dart';
+import 'package:yarn/widgets/add_chore/chore_models.dart';
 import 'package:yarn/widgets/add_room/add_room_sheet.dart';
 import 'package:yarn/widgets/screens/rooms/room_details_screen.dart';
 import 'package:yarn/widgets/ui/room_card.dart';
@@ -25,19 +27,6 @@ class _RoomsScreenState extends State<RoomsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SpoolProvider>().init();
     });
-  }
-
-  /// Monday 00:00 of the current week (local time).
-  DateTime get _weekStart {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  }
-
-  /// Approximation: Task only stores `lastCompleted`, so a chore counts as
-  /// done this week if it was last completed on/after Monday.
-  bool _doneThisWeek(Task t) {
-    final c = t.lastCompleted?.toLocal();
-    return c != null && !c.isBefore(_weekStart);
   }
 
   void _openRoom(String roomId) {
@@ -66,6 +55,9 @@ class _RoomsScreenState extends State<RoomsScreen> {
           icon: draft.icon,
         ),
       );
+      // Pin starters to today's weekday / day of month, the same defaults
+      // the chore sheet uses.
+      final now = DateTime.now();
       for (final c in draft.starters) {
         await provider.addTask(
           Task(
@@ -74,6 +66,12 @@ class _RoomsScreenState extends State<RoomsScreen> {
             name: c.title,
             repUnit: c.repeat.name,
             every: c.every,
+            repeatsOn: c.repeat == Repeat.week
+                ? [TaskUtils.dayCode(now.weekday)]
+                : const [],
+            monthlyOn: c.repeat == Repeat.month
+                ? (now.day > 28 ? 31 : now.day)
+                : null,
             roomId: room.id,
           ),
         );
@@ -135,7 +133,8 @@ class _RoomsScreenState extends State<RoomsScreen> {
                         room: r,
                         color: roomColorAt(r.colorIndex, i),
                         total: roomTasks.length,
-                        done: roomTasks.where(_doneThisWeek).length,
+                        done: roomTasks.where((t) => t.isDone).length,
+                        due: roomTasks.where((t) => t.isDue).length,
                         onTap: () => _openRoom(r.id),
                       );
                     },

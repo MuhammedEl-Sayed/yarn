@@ -7,6 +7,7 @@ import 'package:yarn/theme/app_colors.dart';
 import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/theme/room_palette.dart';
 import 'package:yarn/utils/chore_flow.dart';
+import 'package:yarn/widgets/ui/room_card.dart';
 import 'package:yarn/widgets/ui/task_row.dart';
 import 'package:yarn/widgets/ui/skein_ball.dart';
 
@@ -25,24 +26,6 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _toggle(Task t) async {
-    try {
-      await context.read<SpoolProvider>().toggleTask(t);
-    } catch (e) {
-      debugPrint('TOGGLE FAILED: $e');
-      if (mounted) _showError("Couldn't update chore");
-    }
-  }
-
-  Future<void> _deleteTask(Task t) async {
-    try {
-      await context.read<SpoolProvider>().deleteTask(t.id);
-    } catch (e) {
-      debugPrint('DELETE TASK FAILED: $e');
-      if (mounted) _showError("Couldn't delete chore");
-    }
   }
 
   Future<void> _deleteRoom(Room room) async {
@@ -92,8 +75,15 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     }
 
     final color = roomColorAt(room.colorIndex, index < 0 ? 0 : index);
-    final roomTasks = tasks.where((t) => t.roomId == room.id).toList();
-    final done = roomTasks.where((t) => t.isDoneToday).length;
+    // Due first (overdue at the top), then upcoming, then done.
+    final roomTasks = tasks.where((t) => t.roomId == room.id).toList()
+      ..sort((a, b) {
+        if (a.isDone != b.isDone) return a.isDone ? 1 : -1;
+        return (a.dueDate ?? DateTime(9999)).compareTo(
+          b.dueDate ?? DateTime(9999),
+        );
+      });
+    final due = roomTasks.where((t) => t.isDue).length;
     final muted = AppColors.ink.withValues(alpha: 0.55);
 
     return Scaffold(
@@ -150,9 +140,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${roomTasks.length} '
-                        '${roomTasks.length == 1 ? 'chore' : 'chores'}'
-                        ' · $done done today',
+                        roomSummary(total: roomTasks.length, due: due),
                         style: AppText.body(13, color: muted),
                       ),
                     ],
@@ -177,10 +165,10 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   key: ValueKey(t.id),
                   task: t,
                   users: users,
-                  onToggle: () => _toggle(t),
+                  onToggle: () => toggleChore(context, t),
                   isEditMode: _isEditMode,
                   onEditTap: () => openChoreSheet(context, t),
-                  onDeleteTap: () => _deleteTask(t),
+                  onDeleteTap: () => confirmDeleteChore(context, t),
                 ),
           ],
         ),

@@ -64,14 +64,29 @@ class SpoolProvider extends ChangeNotifier {
     _replaceTask(saved);
   }
 
+  /// What `lastCompleted` was before each chore was ticked this session, so
+  /// unticking puts its schedule back instead of wiping its history.
+  final Map<String, DateTime?> _completedBefore = {};
+
   Future<void> toggleTask(Task task) async {
-    final now = DateTime.now().toUtc();
-    final flipped = task.copyWith(lastCompleted: task.isDoneToday ? null : now);
+    final DateTime? lastCompleted;
+    if (task.isDone) {
+      lastCompleted = _completedBefore.remove(task.id);
+    } else {
+      _completedBefore[task.id] = task.lastCompleted;
+      lastCompleted = DateTime.now().toUtc();
+    }
+    final flipped = task.copyWith(lastCompleted: lastCompleted);
     _replaceTask(flipped);
     try {
       _replaceTask(await _service.updateTask(flipped));
     } catch (_) {
       _replaceTask(task);
+      if (task.isDone) {
+        _completedBefore[task.id] = lastCompleted;
+      } else {
+        _completedBefore.remove(task.id);
+      }
       rethrow;
     }
   }

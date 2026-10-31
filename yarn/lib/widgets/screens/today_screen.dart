@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yarn/models/room.dart';
@@ -23,8 +22,7 @@ class TodayScreen extends StatefulWidget {
 class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
   static const _all = 'All';
 
-  final String _filter = _all; // 'All' or a room id
-  String _person = _all; // 'All' or a user name
+  String _person = _all; // 'All' or a user id
   bool isEditMode = false;
   Timer? _poll;
 
@@ -52,40 +50,6 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     if (mounted) context.read<SpoolProvider>().init();
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _logError(String what, Object e) {
-    if (e is DioException) {
-      debugPrint(
-        '$what FAILED ${e.response?.statusCode}: ${e.response?.data ?? e.message}',
-      );
-    } else {
-      debugPrint('$what FAILED: $e');
-    }
-  }
-
-  Future<void> _toggle(Task t) async {
-    try {
-      await context.read<SpoolProvider>().toggleTask(t);
-    } catch (e) {
-      _logError('TOGGLE', e);
-      if (mounted) _showError("Couldn't update chore");
-    }
-  }
-
-  Future<void> _deleteTask(Task t) async {
-    try {
-      await context.read<SpoolProvider>().deleteTask(t.id);
-    } catch (e) {
-      _logError('DELETETASK', e);
-      if (mounted) _showError("Couldn't delete task");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final tasks = context.select((SpoolProvider p) => p.tasks);
@@ -95,37 +59,35 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
     final loading = context.select((SpoolProvider p) => p.loading);
 
     // Dropdown options as value -> label. Maps dedupe by value, so duplicate
-    // ids/names can't produce two items with the same value.
-    final roomOptions = <String, String>{
-      _all: _all,
-      for (final r in rooms) r.id: r.name,
-    };
+    // ids can't produce two items with the same value. Chores store assignee
+    // ids, so filter by id too.
     final personOptions = <String, String>{
       _all: _all,
-      for (final u in users) u.name: u.name,
+      for (final u in users)
+        if (u.id != null) u.id!: u.name,
     };
-    // If the selected value no longer exists (room deleted, user renamed,
-    // data refreshed), fall back to 'All' instead of crashing the dropdown.
-    final roomFilter = roomOptions.containsKey(_filter) ? _filter : _all;
+    // If the selected person no longer exists (user removed, data refreshed),
+    // fall back to 'All' instead of crashing the dropdown.
     final personFilter = personOptions.containsKey(_person) ? _person : _all;
 
-    final visible = tasks.where((t) {
-      final roomOk = roomFilter == _all || t.roomId == roomFilter;
-      final personOk =
-          personFilter == _all || t.assignedTo.contains(personFilter);
-      if (isEditMode) {
-        // Edit mode shows everything so you can fix or delete any chore.
-        return roomOk && personOk;
-      }
-      return t.isActive &&
-          roomOk &&
-          personOk &&
-          (t.isDueToday || t.isCompletedThisCycle);
-    }).toList();
+    final filtered = tasks.where(
+      (t) => personFilter == _all || t.assignedTo.contains(personFilter),
+    );
+    // Today's list: what's due (or overdue), plus what got done today.
+    final today = filtered
+        .where((t) => t.isActive && (t.isDue || t.isDoneToday))
+        .toList();
+    // Edit mode shows everything so you can fix or delete any chore.
+    final visible = isEditMode ? filtered.toList() : today;
 
-    final pending = visible.where((t) => !t.isDoneToday).toList();
-    final completed = visible.where((t) => t.isDoneToday).toList();
-    final done = completed.length;
+    final pending = visible.where((t) => !t.isDone).toList()
+      ..sort(
+        (a, b) => (a.dueDate ?? DateTime(9999)).compareTo(
+          b.dueDate ?? DateTime(9999),
+        ),
+      );
+    final completed = visible.where((t) => t.isDone).toList();
+    final done = today.where((t) => t.isDone).length;
     final roomNames = {for (final Room r in rooms) r.id: r.name};
 
     // Group pending chores by room; anything without a known room goes to "Other".
@@ -140,14 +102,15 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
       }
     }
 
-    Widget buildRow(Task t) => TaskRow(
+    // Rows under a room header don't repeat the room's name.
+    Widget buildRow(Task t, {bool showRoom = false}) => TaskRow(
       key: ValueKey(t.id),
       task: t,
       users: users,
-      roomName: roomNames[t.roomId],
-      onToggle: () => _toggle(t),
+      roomName: showRoom ? roomNames[t.roomId] : null,
+      onToggle: () => toggleChore(context, t),
       isEditMode: isEditMode,
-      onDeleteTap: () => _deleteTask(t),
+      onDeleteTap: () => confirmDeleteChore(context, t),
       onEditTap: () => openChoreSheet(context, t),
     );
 
@@ -166,10 +129,11 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _TopBar(
+                      isEditMode: isEditMode,
                       onPressed: () => setState(() => isEditMode = !isEditMode),
                     ),
                     const SizedBox(height: 16),
-                    _ProgressCard(done: done, total: visible.length),
+                    _ProgressCard(done: done, total: today.length),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -249,7 +213,9 @@ class _TodayScreenState extends State<TodayScreen> with WidgetsBindingObserver {
                       child: CollapsibleSection(
                         title: 'Completed',
                         count: completed.length,
-                        children: [for (final t in completed) buildRow(t)],
+                        children: [
+                          for (final t in completed) buildRow(t, showRoom: true),
+                        ],
                       ),
                     ),
                   )
@@ -295,9 +261,10 @@ class _FilterDropdown extends StatelessWidget {
 }
 
 class _TopBar extends StatelessWidget {
+  final bool isEditMode;
   final VoidCallback onPressed;
 
-  const _TopBar({required this.onPressed});
+  const _TopBar({required this.isEditMode, required this.onPressed});
 
   static const _days = [
     'Monday',
@@ -345,7 +312,10 @@ class _TopBar extends StatelessWidget {
             ],
           ),
         ),
-        IconButton(icon: const Icon(Icons.edit), onPressed: onPressed),
+        IconButton(
+          icon: Icon(isEditMode ? Icons.check : Icons.edit),
+          onPressed: onPressed,
+        ),
       ],
     );
   }
@@ -362,7 +332,7 @@ class _ProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF3),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.line),
       ),
@@ -399,41 +369,6 @@ class _ProgressCard extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? AppColors.ink : const Color(0xFFFFFBF3),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.ink : AppColors.line),
-        ),
-        child: Text(
-          label,
-          style: AppText.body(
-            14,
-            weight: FontWeight.w800,
-            color: selected ? Colors.white : AppColors.ink,
-          ),
-        ),
       ),
     );
   }

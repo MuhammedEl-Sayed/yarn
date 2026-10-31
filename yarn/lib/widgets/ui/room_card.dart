@@ -5,13 +5,18 @@ import 'package:yarn/theme/app_text.dart';
 import 'package:yarn/theme/room_palette.dart';
 import 'package:yarn/widgets/ui/skein_ball.dart';
 
-/// Tappable room card: yarn ball, icon + name, "N chores · X of N this week",
-/// progress bar and a chevron.
+/// Tappable room card: yarn ball, icon + name, "N chores · X due today",
+/// a progress bar of how many chores are done for now, and a chevron.
 class RoomCard extends StatelessWidget {
   final Room room;
   final Color color;
   final int total;
+
+  /// Chores done for their current cycle.
   final int done;
+
+  /// Chores due today or overdue.
+  final int due;
   final VoidCallback onTap;
 
   const RoomCard({
@@ -20,6 +25,7 @@ class RoomCard extends StatelessWidget {
     required this.color,
     required this.total,
     required this.done,
+    required this.due,
     required this.onTap,
   });
 
@@ -30,7 +36,7 @@ class RoomCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: const Color(0xFFFFFBF3),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
         child: InkWell(
           onTap: onTap,
@@ -64,8 +70,7 @@ class RoomCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$total ${total == 1 ? 'chore' : 'chores'}'
-                        ' · $done of $total this week',
+                        roomSummary(total: total, due: due),
                         style: AppText.body(
                           13,
                           color: AppColors.ink.withValues(alpha: 0.6),
@@ -96,4 +101,11 @@ class RoomCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "3 chores · 1 due today", shared by the room card and the room page.
+String roomSummary({required int total, required int due}) {
+  final chores = '$total ${total == 1 ? 'chore' : 'chores'}';
+  if (total == 0) return chores;
+  return '$chores · ${due == 0 ? 'all caught up' : '$due due today'}';
 }
